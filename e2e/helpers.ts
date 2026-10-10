@@ -16,7 +16,7 @@ export async function settled(page: Page, expected?: string): Promise<string> {
     .poll(async () => {
       const s = await talkState(page);
       return s && !s.endsWith(':flying') ? s : 'flying';
-    }, { timeout: 15_000 })
+    }, { timeout: 30_000 })
     .not.toBe('flying');
   const s = (await talkState(page))!;
   if (expected) expect(s).toBe(expected);

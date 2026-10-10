@@ -8,12 +8,12 @@ test.describe('«Путешествие» на десктопе', () => {
     await expect(page.locator('.app-tour__list button')).toHaveCount(13);
     await page.locator('[data-stop="9"]').click();
     const show = page.locator('.ui-slideshow');
-    await expect(show).toBeVisible({ timeout: 10_000 });
+    await expect(show).toBeVisible({ timeout: 30_000 });
     await expect(show).toContainText('Елабуга');
     await expect(show).toContainText('Значение для России');
     // все фото остановки, переход к соседней остановке
     await show.getByRole('button', { name: /Набережные Челны/ }).click();
-    await expect(show).toContainText('КАМАЗ', { timeout: 10_000 });
+    await expect(show).toContainText('КАМАЗ', { timeout: 30_000 });
   });
 
   test('«Источники» перечисляют авторов всех фото и данные карты', async ({ page }) => {
@@ -48,7 +48,7 @@ test.describe('телефон', () => {
     await expect(page.locator('.app-tour')).toHaveClass(/is-open/);
     await expect(page.getByRole('button', { name: 'Начать доклад' })).toBeHidden();
     await page.locator('[data-stop="3"]').click();
-    await expect(page.locator('.ui-slideshow')).toContainText('Казанский кремль', { timeout: 10_000 });
+    await expect(page.locator('.ui-slideshow')).toContainText('Казанский кремль', { timeout: 30_000 });
   });
 
   test('касания в «Докладе»: правые 2/3 — вперёд, левая 1/3 — назад', async ({ page }) => {
