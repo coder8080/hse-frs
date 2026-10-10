@@ -1,12 +1,12 @@
 /* Каркас приложения: канвас, обложка доклада, панель «Путешествия», QR, «Источники», подписи на карте.
-   Токены — из src/ui/styles.css (--ui-*). */
+   Фирменный стиль НИУ ВШЭ, токены — из src/ui/styles.css (--hse-*, --ui-*). */
 
 html,
 body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: #dfe9ee;
+  background: #e4e9f0; /* = palette.sky */
   font-family: var(--ui-sans);
   color: var(--ui-ink);
   -webkit-font-smoothing: antialiased;
@@ -23,29 +23,30 @@ body {
   touch-action: none;
 }
 
+/* кнопки как в брендбуке: тёмно-синий прямоугольник со скруглением, белый текст */
 .app-btn {
-  font: 600 15px/1 var(--ui-sans);
-  padding: 11px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--ui-rule);
+  font: 500 15px/1 var(--ui-sans);
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--ui-ink);
   background: var(--ui-paper);
   color: var(--ui-ink);
   cursor: pointer;
 }
 .app-btn:hover {
-  background: var(--ui-paper-2);
+  background: var(--hse-sky);
 }
 .app-btn:focus-visible {
-  outline: 2px solid var(--ui-accent);
+  outline: 3px solid var(--ui-gold);
   outline-offset: 2px;
 }
 .app-btn--primary {
-  background: var(--ui-accent);
-  border-color: var(--ui-accent);
+  background: var(--ui-ink);
   color: #fff;
 }
 .app-btn--primary:hover {
-  background: #96361f;
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
 }
 
 /* ——— загрузка ——— */
@@ -59,72 +60,108 @@ body {
   z-index: 5;
 }
 
-/* ——— обложка «Доклада» ——— */
+/* ——— обложка «Доклада»: тёмно-синий блок с полосой паттерна ——— */
 .app-cover {
   position: fixed;
   inset: 0;
   z-index: 35;
   display: grid;
   align-items: end;
-  padding: calc(var(--u) * 9) calc(var(--u) * 10);
-  background: linear-gradient(to top, rgb(20 23 26 / 0.82), rgb(20 23 26 / 0.35) 55%, rgb(20 23 26 / 0) 80%);
+  justify-items: start;
+  padding: calc(var(--u) * 7);
+  background: linear-gradient(to top, rgb(10 30 72 / 0.5), rgb(10 30 72 / 0) 60%);
   pointer-events: none;
 }
 .app-cover[hidden] {
   display: none;
 }
 .app-cover__inner {
+  position: relative;
+  max-width: calc(var(--u) * 134);
+  padding: calc(var(--u) * 5.5) calc(var(--u) * 22) calc(var(--u) * 3.5) calc(var(--u) * 6);
+  background: var(--hse-navy);
   color: var(--ui-on-night);
-  max-width: 70ch;
+  box-shadow: var(--ui-shadow);
+}
+.app-cover__inner::before {
+  /* колонка фирменного паттерна справа */
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--u) * 16);
+  background: var(--hse-tile) left top / calc(var(--u) * 16) auto repeat-y;
 }
 .app-cover__kicker {
-  font: 700 calc(var(--u) * 1.9) / 1 var(--ui-sans);
-  letter-spacing: 0.14em;
+  font: 500 calc(var(--u) * 1.8) / 1 var(--ui-sans);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ui-gold);
-  margin: 0 0 calc(var(--u) * 2);
+  color: var(--hse-sky);
+  margin: 0 0 calc(var(--u) * 3);
+  padding-bottom: calc(var(--u) * 1.6);
+  border-bottom: 1px solid rgb(255 255 255 / 0.3);
 }
 .app-cover h1 {
-  font: 600 calc(var(--u) * 10) / 1 var(--ui-serif);
+  font: 400 calc(var(--u) * 9.5) / 1.02 var(--ui-serif);
+  letter-spacing: -0.01em;
   margin: 0;
 }
 .app-cover__sub {
-  font: italic 400 calc(var(--u) * 4) / 1.2 var(--ui-serif);
-  margin: calc(var(--u) * 1.5) 0 0;
+  font: 300 calc(var(--u) * 3.8) / 1.2 var(--ui-sans);
+  margin: calc(var(--u) * 1.8) 0 0;
   color: var(--ui-on-night-2);
 }
-.app-cover__hint {
-  font: 500 calc(var(--u) * 1.6) / 1 var(--ui-sans);
-  margin: calc(var(--u) * 5) 0 0;
+/* нижняя строка с вертикальными линейками, как в подвале фирменных макетов */
+.app-cover__foot {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: calc(var(--u) * 6);
+  font: 400 calc(var(--u) * 1.6) / 1.3 var(--ui-sans);
   color: var(--ui-on-night-2);
+}
+.app-cover__foot span {
+  padding: calc(var(--u) * 0.3) calc(var(--u) * 2.4) calc(var(--u) * 0.3) calc(var(--u) * 1.2);
+  border-left: 1px solid rgb(255 255 255 / 0.45);
+}
+.app-cover__foot span:last-child {
+  margin-left: auto;
+  border-right: 1px solid rgb(255 255 255 / 0.45);
 }
 
-/* ——— QR на финале ——— */
+/* ——— QR на финале: строка внизу этикетки доклада ——— */
 .app-qr {
-  position: fixed;
-  right: calc(var(--u) * 3);
-  top: calc(var(--u) * 3);
-  z-index: 45;
-  margin: 0;
-  padding: calc(var(--u) * 1.2);
-  background: #fff;
-  border-radius: var(--ui-radius);
-  box-shadow: var(--ui-shadow);
-  width: calc(var(--u) * 19);
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 2.4);
+  margin: calc(var(--u) * 3 * var(--fit, 1)) 0 0;
+  padding-top: calc(var(--u) * 2.4 * var(--fit, 1));
+  border-top: 1px solid var(--ui-rule);
 }
 .app-qr[hidden] {
   display: none;
 }
 .app-qr svg {
   display: block;
-  width: 100%;
+  flex: none;
+  width: calc(var(--u) * 19 * var(--fit, 1));
   height: auto;
 }
 .app-qr figcaption {
-  font: 600 calc(var(--u) * 1.25) / 1.2 var(--ui-sans);
-  text-align: center;
-  margin-top: calc(var(--u) * 0.6);
-  color: var(--ui-ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  font: 400 max(13px, calc(var(--u) * 2 * var(--fit, 1))) / 1.25 var(--ui-sans);
+  color: var(--ui-ink);
+  word-break: break-all;
+}
+.app-qr figcaption span {
+  font-weight: 500;
+  font-size: 0.8em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ui-accent);
+  word-break: normal;
 }
 
 /* ——— «Путешествие»: панель остановок ——— */
@@ -137,41 +174,55 @@ body {
   z-index: 25;
   display: flex;
   flex-direction: column;
-  background: rgb(245 240 230 / 0.94);
-  border: 1px solid var(--ui-rule);
-  border-radius: 8px;
+  background: #fff;
   box-shadow: var(--ui-shadow);
   overflow: hidden;
 }
 .app-tour__head {
-  padding: 20px 20px 12px;
-  border-bottom: 1px solid var(--ui-rule);
+  position: relative;
+  padding: 22px 86px 20px 22px;
+  background: var(--hse-navy);
+  color: #fff;
+}
+.app-tour__head::after {
+  /* плитка фирменного паттерна в углу шапки */
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 64px;
+  height: 64px;
+  background: var(--hse-tile) center / 100% 100%;
 }
 .app-tour__head h1 {
-  font: 600 28px/1.1 var(--ui-serif);
+  font: 400 30px/1.05 var(--ui-serif);
   margin: 0;
 }
 .app-tour__head p {
-  font: italic 400 16px/1.3 var(--ui-serif);
-  color: var(--ui-ink-3);
-  margin: 4px 0 0;
+  font: 300 16px/1.3 var(--ui-sans);
+  color: var(--ui-on-night-2);
+  margin: 6px 0 0;
 }
 .app-tour__list {
   list-style: none;
   margin: 0;
-  padding: 6px 8px;
+  padding: 8px 0;
   overflow-y: auto;
   flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-rule) transparent;
+}
+.app-tour__list li + li button {
+  border-top: 1px solid var(--hse-grey-1);
 }
 .app-tour__list button {
   display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 1px 8px;
+  grid-template-columns: 30px 1fr;
+  gap: 2px 12px;
   width: 100%;
   text-align: left;
-  padding: 9px 10px;
+  padding: 10px 18px;
   border: 0;
-  border-radius: 6px;
   background: none;
   font-family: var(--ui-sans);
   color: var(--ui-ink);
@@ -181,26 +232,36 @@ body {
   background: var(--ui-paper-2);
 }
 .app-tour__list button.is-active {
-  background: var(--ui-paper-3);
+  background: var(--hse-sky);
 }
 .app-tour__num {
   grid-row: span 2;
-  font: 600 20px/1.1 var(--ui-serif);
-  color: var(--ui-accent);
+  align-self: start;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+  background: var(--ui-ink);
+  color: #fff;
+  font: 500 15px/1 var(--ui-sans);
+}
+.app-tour__list button.is-active .app-tour__num {
+  background: var(--hse-orange);
 }
 .app-tour__title {
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 500;
+  font-size: 16px;
 }
 .app-tour__card {
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.35;
   color: var(--ui-ink-3);
 }
 .app-tour__actions {
   display: flex;
   gap: 8px;
-  padding: 12px 16px 16px;
+  padding: 14px 18px 18px;
   border-top: 1px solid var(--ui-rule);
 }
 .app-tour__toggle {
@@ -215,7 +276,6 @@ body {
     bottom: 0;
     width: auto;
     max-height: 72vh;
-    border-radius: 14px 14px 0 0;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     transform: translateY(100%);
     transition: transform 220ms var(--ui-ease);
@@ -231,13 +291,15 @@ body {
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
     box-shadow: var(--ui-shadow);
+    background: var(--ui-ink);
+    color: #fff;
   }
   .app-tour.is-open ~ .app-tour__toggle {
     display: none;
   }
 }
 
-/* ——— подписи на карте ——— */
+/* ——— подписи на карте: белая плашка, номер в тёмно-синем квадрате ——— */
 .app-labels {
   position: fixed;
   inset: 0;
@@ -252,42 +314,45 @@ body {
   pointer-events: auto;
   cursor: pointer;
   border: 0;
-  padding: 4px 9px 4px 4px;
-  border-radius: 999px;
-  background: rgb(245 240 230 / 0.92);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
-  font: 600 12px/1 var(--ui-sans);
+  padding: 0 10px 0 0;
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: 0 1px 3px rgb(15 45 105 / 0.3);
+  font: 500 13px/1 var(--ui-sans);
   color: var(--ui-ink);
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .app-label[hidden] {
   display: none;
 }
 .app-label.is-compact {
-  padding-right: 4px;
+  padding-right: 0;
 }
 .app-label.is-compact span {
   display: none;
 }
 .app-label.is-compact:hover span {
   display: inline;
+  padding-right: 10px;
 }
 .app-label b {
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--ui-accent);
+  width: 22px;
+  height: 22px;
+  background: var(--ui-ink);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
 }
 .app-label.is-active {
-  background: var(--ui-accent);
+  background: var(--ui-ink);
   color: #fff;
+}
+.app-label.is-active b {
+  background: var(--hse-orange);
 }
 
 /* ——— «Источники» ——— */
@@ -295,7 +360,7 @@ body {
   width: min(820px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
   border: 0;
-  border-radius: 10px;
+  border-top: 8px solid var(--ui-ink);
   padding: 0;
   background: var(--ui-paper);
   color: var(--ui-ink);
@@ -306,16 +371,18 @@ body {
   backdrop-filter: blur(6px);
 }
 .app-sources__inner {
-  padding: 24px 28px 32px;
+  padding: 26px 30px 34px;
   font: 15px/1.55 var(--ui-sans);
 }
 .app-sources__inner h2 {
-  font: 600 30px/1.1 var(--ui-serif);
+  font: 400 32px/1.1 var(--ui-serif);
   margin: 0 0 8px;
 }
 .app-sources__inner h3 {
-  font: 600 19px/1.2 var(--ui-serif);
-  margin: 22px 0 6px;
+  font: 500 19px/1.2 var(--ui-serif);
+  margin: 24px 0 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hse-grey-1);
 }
 .app-sources__inner ul {
   margin: 0;
@@ -346,6 +413,6 @@ body {
     display: none;
   }
   .app-label:not(.is-active) {
-    padding-right: 4px;
+    padding-right: 0;
   }
 }

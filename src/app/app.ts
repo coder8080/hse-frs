@@ -24,7 +24,7 @@ const ARRIVAL_HOLD_MS = 1000;
  * «Доклад», пролётная остановка: карточка прижата к левому нижнему углу, поэтому миниатюра
  * сдвигается вправо-вверх (доли экрана), чтобы карточка её не закрывала.
  */
-const CARD_FRAMING = { landscape: { x: 0.14, y: 0.1 }, portrait: { x: 0, y: 0.18 } };
+const CARD_FRAMING = { landscape: { x: 0.15, y: 0.02 }, portrait: { x: 0, y: 0.18 } };
 
 export interface AppOptions {
   mode: Mode;
@@ -54,7 +54,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
   window.addEventListener('resize', fitFog);
 
   // миниатюры на рельефе; близкие (кремль и слобода в 2 км) раздвигаются, чтобы не наезжали
-  const scales = route.stops.map((s) => MINIATURE_SCALE * (s.kind === 'key' ? 1 : 0.8));
+  const scales = route.stops.map((s) => MINIATURE_SCALE * (s.kind === 'key' ? 1 : 0.9));
   const places = spread(
     route.stops.map((s) => project(s.lat, s.lon)),
     scales.map((k, i) => (route.stops[i].kind === 'intro' ? 0 : k * 4.8)),

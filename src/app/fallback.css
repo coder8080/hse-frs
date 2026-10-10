@@ -1,24 +1,26 @@
 .fb {
-  --fb-paper: #f6f2e9;
-  --fb-ink: #2a2723;
-  --fb-muted: #6b645a;
-  --fb-accent: #8a5a44;
-  --fb-line: #e2dbcc;
+  /* фирменные цвета НИУ ВШЭ */
+  --fb-paper: #ffffff;
+  --fb-ink: #0f2d69;
+  --fb-muted: #6b7489;
+  --fb-accent: #234b9b;
+  --fb-line: #e6e6e6;
   max-width: 760px;
   margin: 0 auto;
   padding: 24px 16px 64px;
   color: var(--fb-ink);
-  font: 17px/1.6 'Manrope Variable', system-ui, sans-serif;
+  font: 17px/1.6 'Jost Variable', 'Manrope Variable', system-ui, sans-serif;
 }
 
 body:has(.fb) {
   margin: 0;
-  background: var(--fb-paper, #f6f2e9);
+  background: var(--fb-paper, #ffffff);
 }
 
 .fb h1,
 .fb h2 {
-  font-family: 'Lora Variable', Georgia, serif;
+  font-family: 'Roboto Slab Variable', Georgia, serif;
+  font-weight: 400;
   line-height: 1.2;
   margin: 0;
 }
@@ -36,7 +38,7 @@ body:has(.fb) {
 .fb-note {
   font-size: 14px;
   color: var(--fb-muted);
-  border-left: 3px solid var(--fb-accent);
+  border-left: 4px solid var(--fb-ink);
   padding-left: 10px;
   margin: 16px 0;
 }
@@ -67,9 +69,14 @@ body:has(.fb) {
 }
 
 .fb-num {
-  font-family: 'Lora Variable', Georgia, serif;
-  font-size: 28px;
-  color: var(--fb-accent);
+  font-size: 18px;
+  font-weight: 500;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: var(--fb-ink);
+  color: #fff;
   grid-row: span 2;
 }
 
@@ -79,7 +86,8 @@ body:has(.fb) {
 }
 
 .fb-link {
-  font-style: italic;
+  padding-left: 14px;
+  border-left: 4px solid var(--fb-ink);
   color: var(--fb-muted);
 }
 
@@ -96,7 +104,6 @@ body:has(.fb) {
 .fb-gallery img {
   width: 100%;
   height: auto;
-  border-radius: 6px;
   background: var(--fb-line);
   display: block;
 }

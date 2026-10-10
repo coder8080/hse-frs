@@ -17,7 +17,7 @@ export interface Viewpoint {
 const CRUISE = 9;
 /** Ракурс у остановки: откуда смотрим на миниатюру (смещение к югу и вверх). */
 const VIEW_KEY = { back: 7.5, up: 6 };
-const VIEW_FLY = { back: 13, up: 10 };
+const VIEW_FLY = { back: 7, up: 5 };
 
 export function stopTarget(lat: number, lon: number, heightAt: HeightFn): THREE.Vector3 {
   const p = project(lat, lon);
@@ -28,6 +28,8 @@ export function stopTarget(lat: number, lon: number, heightAt: HeightFn): THREE.
 export function viewpoint(lat: number, lon: number, kind: string, heightAt: HeightFn): Viewpoint {
   const target = stopTarget(lat, lon, heightAt);
   const v = kind === 'flythrough' ? VIEW_FLY : VIEW_KEY;
+  // пролётные: камера близко, взгляд выше — высокие модели (трубы Нижнекамска) не обрезаются сверху
+  if (kind === 'flythrough') target.y += 1;
   const position = new THREE.Vector3(target.x, 0, target.z + v.back);
   position.y = Math.max(target.y + v.up, heightAt(position.x, position.z) + 2);
   return { position, target };

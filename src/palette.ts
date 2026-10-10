@@ -3,8 +3,8 @@
 
 export const PALETTE = {
   // фон и небо
-  sky: '#dfe9ee',
-  fog: '#dfe9ee',
+  sky: '#e4e9f0',
+  fog: '#e4e9f0',
   // рельеф по высоте (низины → возвышенности)
   lowland: '#a8c686',
   plain: '#c2cf8e',
@@ -15,7 +15,7 @@ export const PALETTE = {
   water: '#5b9ec4',
   waterDeep: '#3f7fa6',
   river: '#6aaed2',
-  border: '#8a5a44',
+  border: '#0f2d69', // тёмно-синий НИУ ВШЭ
   // материалы миниатюр
   stoneWhite: '#f2efe6',
   stoneSand: '#e3d3ac',

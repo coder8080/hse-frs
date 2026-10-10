@@ -1,28 +1,41 @@
-/* Оверлеи интерфейса: спокойный «музейный» стиль под палитру диорамы (src/palette.ts).
-   Тёплая бумага на тёмном размытом фоне, Lora — заголовки, Manrope — текст и интерфейс. */
+/* Оверлеи интерфейса по фирменному стилю НИУ ВШЭ (брендбук 2025):
+   основной тёмно-синий #0F2D69 + синий #234B9B + серые, дополнительный цвет — не больше 25 %;
+   плоские блоки без скруглений, тонкие линейки, квадратные паттерны.
+   Jost — текст и интерфейс (вместо HSE Sans), Roboto Slab — заголовки (вместо HSE Slab). */
 
 :root {
-  --ui-paper: #f5f0e6;
-  --ui-paper-2: #ece4d3;
-  --ui-paper-3: #e3d8c2;
-  --ui-ink: #1f1c18;
-  --ui-ink-2: #4a443b;
-  --ui-ink-3: #756c5f;
-  --ui-rule: #d6c9af;
-  --ui-accent: #b0442b; /* palette.accent, затемнён для контраста на бумаге */
-  --ui-accent-bright: #d9583b; /* palette.accent */
-  --ui-gold: #e0b44c; /* palette.gold */
-  --ui-night: #14171a;
-  --ui-on-night: #f3eee4;
-  --ui-on-night-2: rgb(243 238 228 / 0.72);
-  --ui-backdrop: rgb(15 18 21 / 0.62);
-  --ui-blur: 14px;
+  --hse-navy: #0f2d69;
+  --hse-blue: #234b9b;
+  --hse-grey-1: #e6e6e6;
+  --hse-grey-2: #c6c6c6;
+  --hse-grey-3: #929292;
+  --hse-sky: #cddcf0; /* светлый из триады синего */
+  --hse-orange: #eb691e; /* дополнительный акцент, точечно */
+  --hse-cyan: #0fa0d7;
 
-  --ui-serif: 'Lora Variable', 'Lora', Georgia, 'Times New Roman', serif;
-  --ui-sans: 'Manrope Variable', 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ui-paper: #ffffff;
+  --ui-paper-2: #f2f2f2;
+  --ui-paper-3: var(--hse-grey-1);
+  --ui-ink: var(--hse-navy);
+  --ui-ink-2: #34466e;
+  --ui-ink-3: #6b7489;
+  --ui-rule: var(--hse-grey-2);
+  --ui-accent: var(--hse-blue);
+  --ui-accent-bright: var(--hse-orange);
+  --ui-gold: var(--hse-cyan); /* фокус и акцент на тёмном */
+  --ui-night: var(--hse-navy);
+  --ui-on-night: #ffffff;
+  --ui-on-night-2: rgb(255 255 255 / 0.74);
+  --ui-backdrop: rgb(10 30 72 / 0.74);
+  --ui-blur: 12px;
 
-  --ui-radius: 4px;
-  --ui-shadow: 0 1px 2px rgb(20 16 10 / 0.18), 0 22px 60px -18px rgb(10 8 5 / 0.55);
+  --ui-serif: 'Roboto Slab Variable', 'Roboto Slab', Rockwell, Georgia, serif;
+  --ui-sans: 'Jost Variable', 'Manrope Variable', 'Futura PT', Futura, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --ui-radius: 0px;
+  --ui-shadow: 0 1px 2px rgb(15 45 105 / 0.2), 0 12px 32px -14px rgb(15 45 105 / 0.45);
+  /* фирменный паттерн (брендбук, «Базовые паттерны»): плитка 4×4 — тёмно-синий уголок на сером */
+  --hse-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' shape-rendering='crispEdges'%3E%3Crect width='64' height='64' fill='%23e6e6e6'/%3E%3Crect y='16' width='48' height='16' fill='%230f2d69'/%3E%3Crect x='32' y='16' width='16' height='48' fill='%230f2d69'/%3E%3Crect y='48' width='16' height='16' fill='%23234b9b'/%3E%3Crect x='48' width='16' height='16' fill='%23234b9b'/%3E%3C/svg%3E");
   --ui-fade: 220ms;
   --ui-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
@@ -64,10 +77,12 @@
   margin: 0;
   font-family: var(--ui-sans);
   font-size: 0.8em;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-accent);
+  padding-bottom: 0.7em;
+  border-bottom: 1px solid var(--ui-rule);
 }
 
 :where(.ui-layer) button {
@@ -115,9 +130,7 @@
   padding: 6%;
   text-align: center;
   color: var(--ui-ink-2);
-  background:
-    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.22) 0 2px, transparent 2px 14px),
-    linear-gradient(180deg, #e6e2d6, #d8c995);
+  background: var(--hse-grey-1);
 }
 .ui-photo__art {
   width: min(42%, 220px);
@@ -126,9 +139,8 @@
 .ui-photo__art svg {
   width: 100%;
   height: 100%;
-  border-radius: 3px;
-  background: #dfe9ee;
-  box-shadow: 0 0 0 6px rgb(255 255 255 / 0.55);
+  background: #ffffff;
+  box-shadow: 0 0 0 6px var(--hse-grey-2);
 }
 .ui-photo__ph-caption {
   margin: 0.8em 0 0;
@@ -222,8 +234,7 @@
   height: auto;
   max-width: 100cqw;
   max-height: calc(100cqh - var(--ss-cap));
-  border-radius: 2px;
-  box-shadow: 0 22px 50px -14px rgb(0 0 0 / 0.6);
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.55);
 }
 .ui-ss__photo .ui-photo__placeholder {
   flex: none;
@@ -231,8 +242,7 @@
   height: auto;
   aspect-ratio: var(--ph-ar, 4 / 3);
   min-height: 0;
-  border-radius: 2px;
-  box-shadow: 0 22px 50px -14px rgb(0 0 0 / 0.6);
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.55);
   font-size: 1.1em;
 }
 .ui-photo__caption {
@@ -245,8 +255,7 @@
   color: var(--ui-on-night);
 }
 .ui-photo__caption-text {
-  font-family: var(--ui-serif);
-  font-style: italic;
+  font-family: var(--ui-sans);
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -279,9 +288,8 @@
   gap: 0.45em;
 }
 .ui-ss__dots i {
-  width: 0.55em;
-  height: 0.55em;
-  border-radius: 50%;
+  width: 0.6em;
+  height: 0.6em;
   background: currentColor;
   opacity: 0.28;
   transition: opacity var(--ui-fade), background var(--ui-fade);
@@ -299,26 +307,28 @@
   border-radius: var(--ui-radius);
 }
 .ui-ss__panel::before {
-  /* тонкая рамка-паспарту, как у музейной этикетки */
+  /* тёмно-синяя плашка по верхнему краю, как у фирменных макетов */
   content: '';
   position: absolute;
-  inset: 0.6em;
-  border: 1px solid var(--ui-rule);
-  border-radius: 2px;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--ss-band, 8px);
+  background: var(--ui-ink);
   pointer-events: none;
 }
 .ui-ss__title {
-  margin: 0.3em 0 0;
+  margin: 0.45em 0 0;
   font-family: var(--ui-serif);
-  font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.005em;
   text-wrap: balance;
 }
 .ui-ss__subtitle {
   margin: 0.35em 0 0;
-  font-family: var(--ui-serif);
-  font-style: italic;
+  font-family: var(--ui-sans);
+  font-weight: 400;
   color: var(--ui-ink-2);
   line-height: 1.3;
 }
@@ -338,8 +348,9 @@
 .ui-slideshow[data-variant='talk'] .ui-ss__panel {
   /* --fit < 1 ставит Slideshow.fitPanel, если текст не влезает по высоте */
   --fit: 1;
+  --ss-band: calc(var(--u) * 1.2);
   width: max(340px, calc(var(--u) * 74));
-  padding: calc(var(--u) * 5 * var(--fit)) calc(var(--u) * 5) calc(var(--u) * 4 * var(--fit));
+  padding: calc(var(--u) * 1.2 + var(--u) * 4.5 * var(--fit)) calc(var(--u) * 5) calc(var(--u) * 3.5 * var(--fit));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -383,9 +394,9 @@
 }
 .ui-ss__theses li {
   position: relative;
-  padding-left: max(24px, calc(var(--u) * 5));
+  padding-left: max(30px, 2.05em);
   font-size: max(14px, calc(var(--u) * 3.1 * var(--fit, 1)));
-  font-weight: 560;
+  font-weight: 450;
   line-height: 1.28;
   color: var(--ui-ink);
   text-wrap: pretty;
@@ -395,11 +406,17 @@
   content: counter(thesis);
   position: absolute;
   left: 0;
-  top: -0.06em;
-  font-family: var(--ui-serif);
-  font-weight: 600;
-  font-size: 1.12em;
-  color: var(--ui-accent);
+  top: 0.08em;
+  width: 1.3em;
+  height: 1.3em;
+  display: grid;
+  place-items: center;
+  background: var(--ui-ink);
+  color: #fff;
+  font-family: var(--ui-sans);
+  font-weight: 500;
+  font-size: 0.82em;
+  line-height: 1;
 }
 .ui-ss__lead {
   font-size: max(14px, calc(var(--u) * 3.1 * var(--fit, 1)));
@@ -428,7 +445,7 @@
   font-size: 13px;
 }
 .ui-slideshow[data-variant='tour'] .ui-ss__dots i.is-on {
-  background: var(--ui-gold);
+  background: #fff;
 }
 .ui-slideshow[data-variant='tour'] .ui-ss__panel {
   width: min(46vw, calc(65ch + 120px));
@@ -439,8 +456,9 @@
   scrollbar-width: thin;
   scrollbar-color: var(--ui-rule) transparent;
 }
-.ui-slideshow[data-variant='tour'] .ui-ss__panel::before {
-  display: none; /* в прокручиваемой колонке рамка-паспарту уехала бы */
+.ui-slideshow[data-variant='tour'] .ui-ss__panel {
+  --ss-band: 8px;
+  padding-top: 60px;
 }
 .ui-slideshow[data-variant='tour'] .ui-kicker {
   font-size: 12.5px;
@@ -455,14 +473,13 @@
 
 .ui-ss__close {
   position: absolute;
-  top: 18px;
+  top: 26px;
   right: 18px;
   width: 44px;
   height: 44px;
   display: grid;
   place-items: center;
   border: 1px solid var(--ui-rule);
-  border-radius: 50%;
   background: var(--ui-paper);
   font-size: 26px;
   line-height: 1;
@@ -485,17 +502,15 @@
   place-items: center;
   padding: 0 0 4px;
   border: 0;
-  border-radius: 50%;
-  background: rgb(245 240 230 / 0.92);
-  color: var(--ui-ink);
+  background: var(--ui-ink);
+  color: #fff;
   font-size: 34px;
   line-height: 1;
-  box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.5);
   transition: opacity 150ms, background 150ms;
   z-index: 1;
 }
 .ui-ss__nav:hover:not(:disabled) {
-  background: var(--ui-paper);
+  background: var(--ui-accent);
 }
 .ui-ss__nav:disabled {
   opacity: 0;
@@ -514,10 +529,9 @@
 .ui-ss__link {
   margin: 26px 0 0;
   padding: 2px 0 2px 18px;
-  border-left: 3px solid var(--ui-accent-bright);
-  font-family: var(--ui-serif);
-  font-style: italic;
-  font-size: 1.1em;
+  border-left: 4px solid var(--ui-ink);
+  font-family: var(--ui-sans);
+  font-size: 1.08em;
   line-height: 1.5;
   color: var(--ui-ink-2);
 }
@@ -544,7 +558,7 @@
 .ui-prose h4 {
   margin: 1.6em 0 0.5em;
   font-family: var(--ui-serif);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25;
 }
 .ui-prose h2 {
@@ -561,7 +575,7 @@
 }
 .ui-prose blockquote {
   padding-left: 1em;
-  border-left: 2px solid var(--ui-rule);
+  border-left: 2px solid var(--ui-accent);
   color: var(--ui-ink-2);
 }
 .ui-prose img {
@@ -579,8 +593,8 @@
 .ui-ss__sources h3 {
   margin: 0 0 10px;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-ink-3);
 }
@@ -606,12 +620,12 @@
   gap: 2px;
   min-height: 64px;
   padding: 12px 16px;
-  border: 1px solid var(--ui-rule);
-  border-radius: var(--ui-radius);
-  background: var(--ui-paper-2);
+  border: 0;
+  border-left: 1px solid var(--ui-ink);
+  background: var(--ui-paper-3);
   font-family: var(--ui-serif);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25;
   text-align: left;
   transition: background 120ms, border-color 120ms;
@@ -619,7 +633,7 @@
 .ui-ss__stop-btn small {
   font-family: var(--ui-sans);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-accent);
@@ -627,10 +641,15 @@
 .ui-ss__stop-btn--next {
   align-items: flex-end;
   text-align: right;
+  border-left: 0;
+  border-right: 1px solid var(--ui-ink);
 }
 .ui-ss__stop-btn:hover:not(:disabled) {
-  background: var(--ui-paper-3);
-  border-color: var(--ui-ink-3);
+  background: var(--ui-ink);
+  color: #fff;
+}
+.ui-ss__stop-btn:hover:not(:disabled) small {
+  color: var(--ui-on-night-2);
 }
 .ui-ss__stop-btn:disabled {
   opacity: 0.45;
@@ -679,15 +698,15 @@
   flex-direction: column;
   justify-content: center;
   padding: calc(var(--u) * 3.4) calc(var(--u) * 3.8);
-  border-left: 4px solid var(--ui-accent-bright);
+  border-top: calc(var(--u) * 1.2) solid var(--ui-ink);
 }
 .ui-card .ui-kicker {
   font-size: calc(var(--u) * 1.6);
 }
 .ui-card__title {
-  margin: 0.25em 0 0;
+  margin: 0.4em 0 0;
   font-family: var(--ui-serif);
-  font-weight: 600;
+  font-weight: 500;
   font-size: calc(var(--u) * 4.6);
   line-height: 1.08;
   text-wrap: balance;
@@ -695,7 +714,7 @@
 .ui-card__line {
   margin: calc(var(--u) * 1.6) 0 0;
   font-size: calc(var(--u) * 2.75);
-  font-weight: 520;
+  font-weight: 420;
   line-height: 1.3;
   color: var(--ui-ink);
   text-wrap: pretty;
@@ -720,7 +739,7 @@
   max-width: calc(100vw - 32px);
   padding: calc(var(--u) * 1.6) calc(var(--u) * 4.4) calc(var(--u) * 1.9);
   background: var(--ui-paper);
-  border-radius: var(--ui-radius);
+  border-top: calc(var(--u) * 0.8) solid var(--ui-ink);
   box-shadow: var(--ui-shadow);
   text-align: center;
 }
@@ -729,14 +748,14 @@
 }
 .ui-flight__kicker {
   font-size: calc(var(--u) * 1.55);
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-accent);
 }
 .ui-flight__title {
   font-family: var(--ui-serif);
-  font-weight: 600;
+  font-weight: 500;
   font-size: calc(var(--u) * 3.8);
   line-height: 1.12;
 }
@@ -782,7 +801,7 @@
   transition: transform 200ms var(--ui-ease);
 }
 .ui-preload.is-done .ui-preload__fill {
-  background: #4f8a6b; /* palette.roofGreen */
+  background: var(--ui-accent);
 }
 
 /* ——— чёрный экран ——— */
@@ -802,8 +821,7 @@
   bottom: max(6px, var(--ui-safe-b));
   margin: 0;
   padding: 3px 8px;
-  border-radius: 3px;
-  background: rgb(245 240 230 / 0.78);
+  background: rgb(255 255 255 / 0.82);
   font-family: var(--ui-sans);
   font-size: 11px;
   line-height: 1.3;
@@ -860,8 +878,7 @@
     left: max(14px, var(--ui-safe-l));
     z-index: 1;
     padding: 6px 12px;
-    border-radius: 999px;
-    background: rgb(20 23 26 / 0.62);
+    background: rgb(15 45 105 / 0.78);
   }
   .ui-slideshow[data-variant='tour'] .ui-ss__nav {
     display: none;
@@ -883,9 +900,9 @@
     position: fixed;
     top: calc(10px + var(--ui-safe-t));
     right: calc(10px + var(--ui-safe-r));
-    background: rgb(245 240 230 / 0.94);
+    background: #fff;
     border-color: transparent;
-    box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.5);
+    box-shadow: var(--ui-shadow);
   }
   .ui-slideshow[data-variant='tour'] .ui-prose {
     font-size: 17px;

@@ -95,7 +95,14 @@ export function startTalk(route: RouteData, stage: Stage): TalkHandle {
       running = false;
     }
     writeHash(state);
-    qr.toggle(state.stopIndex === last && state.phase !== 'flying');
+    // QR — внизу этикетки финальной остановки (панель перерисовывается при открытии, поэтому вставляем каждый раз)
+    const qrOn = state.stopIndex === last && state.phase !== 'flying';
+    const panel = slideshow.el.querySelector('.ui-ss__panel');
+    if (qrOn && panel && qr.el.parentElement !== panel) {
+      panel.insertBefore(qr.el, panel.querySelector('.ui-ss__count'));
+      slideshow.fitPanel();
+    }
+    qr.toggle(qrOn);
     document.body.dataset.talk = `${state.stopIndex}:${state.photoIndex}:${state.phase}`;
   }
 
@@ -158,7 +165,9 @@ function createCover(route: RouteData) {
       <p class="app-cover__kicker">Историко-культурный маршрут</p>
       <h1></h1>
       <p class="app-cover__sub"></p>
-      <p class="app-cover__hint">→ / PageDown — начать</p>
+      <div class="app-cover__foot">
+        <span>НИУ ВШЭ</span><span>Основы российской государственности</span><span>→ / PageDown — начать</span>
+      </div>
     </div>`;
   el.querySelector('h1')!.textContent = route.title;
   el.querySelector('.app-cover__sub')!.textContent = route.subtitle ?? '';
@@ -169,15 +178,16 @@ function createCover(route: RouteData) {
   };
 }
 
-/** QR со ссылкой на сайт — на финальной остановке. */
+/** QR со ссылкой на сайт — на финальной остановке, внутри этикетки. */
 function createQr() {
   const el = document.createElement('figure');
   el.className = 'app-qr';
   el.hidden = true;
   el.innerHTML = renderSVG(PUBLIC_URL, { border: 1 });
   const cap = document.createElement('figcaption');
-  cap.textContent = PUBLIC_URL.replace(/^https:\/\//, '');
+  cap.innerHTML = '<span>Маршрут онлайн</span>';
+  cap.append(PUBLIC_URL.replace(/^https:\/\//, ''));
   el.append(cap);
   document.body.append(el);
-  return { toggle: (on: boolean) => (el.hidden = !on) };
+  return { el, toggle: (on: boolean) => (el.hidden = !on) };
 }
