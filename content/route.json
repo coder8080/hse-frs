@@ -1,0 +1,19 @@
+{
+  "title": "По течению веков",
+  "subtitle": "Татарстан от Булгара до Иннополиса",
+  "stops": [
+    { "slug": "tatarstan", "transition": { "type": "start" } },
+    { "slug": "bolgar", "transition": { "type": "arc" } },
+    { "slug": "sviyazhsk", "transition": { "type": "river", "river": "volga" } },
+    { "slug": "kazan-kremlin", "transition": { "type": "river", "river": "volga" } },
+    { "slug": "staro-tatarskaya-sloboda", "transition": { "type": "arc", "height": 3 } },
+    { "slug": "raifa", "transition": { "type": "arc" } },
+    { "slug": "volga-kama", "transition": { "type": "arc" } },
+    { "slug": "chistopol", "transition": { "type": "river", "river": "kama" } },
+    { "slug": "nizhnekamsk", "transition": { "type": "river", "river": "kama" } },
+    { "slug": "elabuga", "transition": { "type": "river", "river": "kama" } },
+    { "slug": "naberezhnye-chelny", "transition": { "type": "arc", "height": 4 } },
+    { "slug": "almetyevsk", "transition": { "type": "arc" } },
+    { "slug": "innopolis", "transition": { "type": "final" } }
+  ]
+}
