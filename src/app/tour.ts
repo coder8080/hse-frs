@@ -28,7 +28,7 @@ export function startTour(route: RouteData, stage: Stage, opts: { phone: boolean
     </header>
     <ol class="app-tour__list"></ol>
     <div class="app-tour__actions">
-      <button type="button" class="app-btn app-btn--primary" data-act="talk">Начать доклад</button>
+      <button type="button" class="app-btn app-btn--primary" data-act="talk">Начать презентацию</button>
       <button type="button" class="app-btn" data-act="sources">Источники</button>
     </div>`;
   panel.querySelector('h1')!.textContent = route.title;

@@ -184,7 +184,7 @@ function createCover(route: RouteData) {
   };
 }
 
-/** QR со ссылкой на сайт — на финальной остановке, внутри этикетки. */
+/** QR со ссылкой на сайт — на финальной остановке, внутри этикетки; рядом — выход на главную. */
 function createQr() {
   const el = document.createElement('figure');
   el.className = 'app-qr';
@@ -193,6 +193,12 @@ function createQr() {
   const cap = document.createElement('figcaption');
   cap.innerHTML = '<span>Маршрут онлайн</span>';
   cap.append(PUBLIC_URL.replace(/^https:\/\//, ''));
+  // конец презентации: главная страница сайта («Путешествие») — тот же адрес без ?mode=talk и #s=…
+  const home = document.createElement('a');
+  home.className = 'app-qr__home';
+  home.href = location.pathname;
+  home.textContent = '← На главную';
+  cap.append(home);
   el.append(cap);
   document.body.append(el);
   return { el, toggle: (on: boolean) => (el.hidden = !on) };

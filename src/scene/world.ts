@@ -28,7 +28,7 @@ export interface World {
 }
 
 export interface WorldOptions {
-  /** Поляны без деревьев (подставки миниатюр). */
+  /** Площадки миниатюр: рельеф под ними выровнен, деревьев нет. */
   clearings?: readonly Clearing[];
   /** Дальность видимости деревьев, км (на телефоне меньше). */
   treeRadius?: number;
@@ -45,7 +45,7 @@ export function buildWorld(data: WorldData, opts: WorldOptions = {}): World {
     }),
   );
 
-  const terrain = buildTerrain({ dem, border, water, rivers, landcover: data.landcover });
+  const terrain = buildTerrain({ dem, border, water, rivers, landcover: data.landcover, pads: opts.clearings });
   const surface = (x: number, z: number) => {
     const h = terrain.heightAt(x, z);
     const w = waterLevelAt(water, x, z);

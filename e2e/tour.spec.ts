@@ -27,10 +27,10 @@ test.describe('«Путешествие» на десктопе', () => {
     expect(await d.locator('.app-sources__photos li').count()).toBeGreaterThanOrEqual(13);
   });
 
-  test('«Начать доклад» переключает режим', async ({ page }) => {
+  test('«Начать презентацию» переключает режим', async ({ page }) => {
     await page.goto('/');
     await ready(page);
-    await page.getByRole('button', { name: 'Начать доклад' }).click();
+    await page.getByRole('button', { name: 'Начать презентацию' }).click();
     await page.waitForURL(/mode=talk/);
     await ready(page);
     await expect(page.locator('.app-cover')).toBeVisible();
@@ -41,17 +41,17 @@ test.describe('телефон', () => {
   const { defaultBrowserType: _ignored, ...pixel } = devices['Pixel 7'];
   test.use(pixel);
 
-  test('открывается «Путешествие», список в шторке, без кнопки доклада', async ({ page }) => {
+  test('открывается «Путешествие», список в шторке, без кнопки презентации', async ({ page }) => {
     await page.goto('/');
     await ready(page);
     await page.getByRole('button', { name: 'Остановки' }).click();
     await expect(page.locator('.app-tour')).toHaveClass(/is-open/);
-    await expect(page.getByRole('button', { name: 'Начать доклад' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Начать презентацию' })).toBeHidden();
     await page.locator('[data-stop="3"]').click();
     await expect(page.locator('.ui-slideshow')).toContainText('Казанский кремль', { timeout: 30_000 });
   });
 
-  test('касания в «Докладе»: правые 2/3 — вперёд, левая 1/3 — назад', async ({ page }) => {
+  test('касания в «Презентации»: правые 2/3 — вперёд, левая 1/3 — назад', async ({ page }) => {
     await page.goto('/?mode=talk#s=0&p=0');
     await ready(page);
     await settled(page, '0:0:slideshow');

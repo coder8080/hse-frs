@@ -17,6 +17,8 @@ export interface TerrainInput {
   water: readonly WaterBody[];
   rivers: readonly RiverLine[];
   landcover: WorldData['landcover'];
+  /** Площадки под миниатюры: рельеф внутри круга выравнивается, чтобы склон не прорезал подставку. */
+  pads?: readonly { x: number; z: number; r: number }[];
   segX?: number;
   segZ?: number;
 }
@@ -40,6 +42,8 @@ const WATER_STEP_M = 9;
 const SHORE_LIFT_M = 1.5;
 /** Прорезь под речной лентой, м. */
 const RIVER_STEP_M = 5;
+/** Ширина перехода от площадки миниатюры к склону, км. */
+const PAD_BLEND_KM = 1.6;
 
 const lin = (hex: string) => new THREE.Color(hex);
 
@@ -54,6 +58,19 @@ export function buildTerrain(input: TerrainInput): Terrain {
   const nv = VX * VZ;
   const vx = (i: number) => WORLD.minX + i * dx;
   const vz = (j: number) => WORLD.minZ + j * dz;
+  /** Вершины сетки в круге: cb(индекс, расстояние). */
+  const forEachNear = (x: number, z: number, r: number, cb: (k: number, d: number) => void) => {
+    const i0 = Math.max(0, Math.floor((x - r - WORLD.minX) / dx));
+    const i1 = Math.min(NX, Math.ceil((x + r - WORLD.minX) / dx));
+    const j0 = Math.max(0, Math.floor((z - r - WORLD.minZ) / dz));
+    const j1 = Math.min(NZ, Math.ceil((z + r - WORLD.minZ) / dz));
+    for (let j = j0; j <= j1; j++) {
+      for (let i = i0; i <= i1; i++) {
+        const d = Math.hypot(vx(i) - x, vz(j) - z);
+        if (d < r) cb(j * VX + i, d);
+      }
+    }
+  };
 
   // 1. высоты: DEM, сглаженный окном в ячейку меша
   const meters = new Float32Array(nv);
@@ -130,7 +147,51 @@ export function buildTerrain(input: TerrainInput): Terrain {
   const rstep = elevToY(RIVER_STEP_M);
   for (let k = 0; k < nv; k++) if (riverMark[k] && Number.isNaN(waterLevel[k])) y[k] -= rstep;
 
-  // 4. затенение впадин (простое AO): насколько вершина ниже среднего по окрестности
+  // 4. площадки под миниатюры, чтобы склон не прорезал подставку. Ровный круг шире площадки
+  // на ячейку: треугольник у края не должен цеплять вершину склона. Высота площадки — высота
+  // поверхности в центре (модель стоит там же, где стояла бы без площадки), но не ниже воды в круге.
+  // Вода в ровном круге засыпается (Болгар на берегу; у острова Свияжск — низкая отмель вокруг
+  // подставки), в переходе к склону — остаётся. Близкие площадки (Свияжск
+  // и Иннополис на высоком берегу) не спорят: вершину выравнивает ближайшая, между ними — склон.
+  const pads = (input.pads ?? []).map((p) => {
+    const r = p.r + cell;
+    const ci = Math.min(NX, Math.max(0, Math.round((p.x - WORLD.minX) / dx)));
+    const cj = Math.min(NZ, Math.max(0, Math.round((p.z - WORLD.minZ) / dz)));
+    const c = cj * VX + ci;
+    let y0 = Number.isNaN(waterLevel[c]) ? y[c] : waterLevel[c] + lift;
+    forEachNear(p.x, p.z, r, (k) => {
+      if (!Number.isNaN(waterLevel[k])) y0 = Math.max(y0, waterLevel[k] + lift);
+    });
+    return { x: p.x, z: p.z, r, y: y0 };
+  });
+  const padOf = new Int16Array(nv).fill(-1);
+  const padW = new Float32Array(nv);
+  const padD = new Float32Array(nv).fill(Infinity); // расстояние в радиусах площадки
+  pads.forEach((pad, n) => {
+    forEachNear(pad.x, pad.z, pad.r + PAD_BLEND_KM, (k, d) => {
+      const t = d <= pad.r ? 1 : 1 - (d - pad.r) / PAD_BLEND_KM;
+      const rel = d / pad.r;
+      if (t > padW[k] || (t === padW[k] && rel < padD[k])) {
+        padOf[k] = n;
+        padW[k] = t;
+        padD[k] = rel;
+      }
+    });
+  });
+  for (let k = 0; k < nv; k++) {
+    const n = padOf[k];
+    if (n < 0) continue;
+    const pad = pads[n];
+    if (!Number.isNaN(waterLevel[k])) {
+      // в ровном круге вода засыпается всегда: модель стоит ровно на площадке, а не в воронке
+      if (padW[k] < 1) continue;
+      waterLevel[k] = NaN; // засыпанное мелководье — уже суша (и для тени впадин ниже)
+    }
+    const t = padW[k];
+    y[k] += (pad.y - y[k]) * t * t * (3 - 2 * t);
+  }
+
+  // 5. затенение впадин (простое AO): насколько вершина ниже среднего по окрестности
   const ao = new Float32Array(nv);
   const AR = 5;
   for (let j = 0; j < VZ; j++) {
@@ -152,7 +213,7 @@ export function buildTerrain(input: TerrainInput): Terrain {
     }
   }
 
-  // 5. гладкая сетка с UV; цвет и свет — в текстуре земли (ground.ts)
+  // 6. гладкая сетка с UV; цвет и свет — в текстуре земли (ground.ts)
   const ground = buildGround({
     dem,
     landcover: input.landcover,
@@ -200,7 +261,7 @@ export function buildTerrain(input: TerrainInput): Terrain {
   const mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: ground.texture }));
   mesh.name = 'terrain';
 
-  // 6. бока подставки: земля в разрезе, затенение по стороне света
+  // 7. бока подставки: земля в разрезе, затенение по стороне света
   const sun = new THREE.Vector3(SUN_DIR.x, SUN_DIR.y, SUN_DIR.z).normalize();
   const sideTris = 2 * (NX + NZ) * 2;
   const spos = new Float32Array(sideTris * 9);

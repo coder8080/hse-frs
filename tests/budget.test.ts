@@ -3,7 +3,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { PNG } from 'pngjs';
 import { describe, expect, it } from 'vitest';
-import { WORLD, project } from '../src/geo';
+import matter from 'gray-matter';
+import * as THREE from 'three';
+import { spread } from '../src/app/app';
+import { MINIATURE_SCALE, WORLD, project } from '../src/geo';
+import { buildMiniature } from '../src/models/index';
 import { LC, makeWorldData, type WorldData } from '../src/scene/types';
 import { buildWorld, riverPolyline } from '../src/scene/world';
 
@@ -59,6 +63,55 @@ describe('мир: бюджет и данные', () => {
     expect(near.length).toBeGreaterThan(300);
     // на поляне под миниатюрой деревьев нет
     expect(near.some(([x, z]) => Math.hypot(x - raifa.x, z - raifa.z) < 3)).toBe(false);
+  });
+
+  it('площадка миниатюры ровная: склон не прорезает подставку', () => {
+    const hs: number[] = [];
+    for (let a = 0; a < 24; a++) {
+      for (const d of [0, 1, 2, 2.6]) {
+        const ang = (a / 24) * Math.PI * 2;
+        hs.push(world.terrainHeightAt(raifa.x + Math.cos(ang) * d, raifa.z + Math.sin(ang) * d));
+      }
+    }
+    expect(Math.max(...hs) - Math.min(...hs)).toBeLessThan(0.01);
+  });
+
+  it('рельеф не прорезает миниатюры на их местах в приложении', () => {
+    // как в app.ts: масштабы, раздвижка, площадки, высота установки
+    const route = json('../content/route.json') as { stops: { slug: string }[] };
+    const stops = route.stops
+      .map((s) => {
+        const fm = matter(readFileSync(join(DATA, '..', 'content', 'stops', `${s.slug}.md`), 'utf8')).data;
+        return { slug: s.slug, kind: fm.kind as string, lat: fm.lat as number, lon: fm.lon as number };
+      })
+      .filter((fm) => fm.kind !== 'intro');
+    const scales = stops.map((fm) => MINIATURE_SCALE * (fm.kind === 'key' ? 1 : 0.9));
+    const places = spread(stops.map((fm) => project(fm.lat, fm.lon)), scales.map((k) => k * 4.8));
+    const w = buildWorld(data, { clearings: places.map((p, i) => ({ ...p, r: scales[i] * 4.8 + 0.5 })) });
+    const v = new THREE.Vector3();
+    const inst = new THREE.Matrix4();
+    stops.forEach((s, i) => {
+      const m = buildMiniature(s.slug);
+      m.group.scale.setScalar(scales[i]);
+      m.group.position.set(places[i].x, w.heightAt(places[i].x, places[i].z), places[i].z);
+      m.group.updateMatrixWorld(true);
+      let worst = 0;
+      m.group.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const pos = mesh.geometry.getAttribute('position');
+        const im = mesh as THREE.InstancedMesh;
+        for (let q = 0; q < (im.isInstancedMesh ? im.count : 1); q++) {
+          const mw = mesh.matrixWorld.clone();
+          if (im.isInstancedMesh) mw.multiply((im.getMatrixAt(q, inst), inst));
+          for (let j = 0; j < pos.count; j++) {
+            v.fromBufferAttribute(pos, j).applyMatrix4(mw);
+            worst = Math.max(worst, w.heightAt(v.x, v.z) - v.y);
+          }
+        }
+      });
+      expect(worst, `${s.slug}: часть модели ушла под рельеф`).toBeLessThan(0.01);
+    });
   });
 
   it('деревья не стоят в воде', () => {

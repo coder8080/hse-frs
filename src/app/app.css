@@ -163,6 +163,25 @@ body {
   color: var(--ui-accent);
   word-break: normal;
 }
+a.app-qr__home {
+  align-self: flex-start;
+  margin-top: 0.5em;
+  padding: 0.45em 0.8em;
+  border: 1px solid var(--ui-ink);
+  border-radius: 6px;
+  font-weight: 500;
+  color: var(--ui-ink);
+  text-decoration: none;
+  word-break: normal;
+  white-space: nowrap;
+}
+a.app-qr__home:hover {
+  background: var(--hse-sky);
+}
+a.app-qr__home:focus-visible {
+  outline: 3px solid var(--ui-gold);
+  outline-offset: 2px;
+}
 
 /* ——— «Путешествие»: панель остановок ——— */
 .app-tour {

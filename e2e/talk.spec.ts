@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { press, ready, settled, talkState } from './helpers';
 
-test.describe('«Доклад»', () => {
+test.describe('«Презентация»', () => {
   test('полный прогон с кликера: от обложки до финала, без внешних запросов', async ({ page, baseURL }) => {
     test.setTimeout(240_000);
     const external: string[] = [];
@@ -34,6 +34,18 @@ test.describe('«Доклад»', () => {
     expect(errors).toEqual([]);
   });
 
+  test('с финальной остановки «На главную» ведёт в «Путешествие»', async ({ page }) => {
+    await page.goto('/?mode=talk#s=12&p=0');
+    await ready(page);
+    await settled(page);
+    const home = page.locator('.app-qr').getByRole('link', { name: /На главную/ });
+    await expect(home).toBeVisible();
+    await home.click();
+    await expect(page).toHaveURL((u) => !u.search.includes('mode=talk') && !u.hash);
+    await ready(page);
+    await expect(page.getByRole('button', { name: 'Начать презентацию' })).toBeVisible();
+  });
+
   test('двойное нажатие в пределах 300 мс сдвигает только на один шаг', async ({ page }) => {
     await page.goto('/?mode=talk#s=0&p=0');
     await ready(page);
@@ -57,7 +69,7 @@ test.describe('«Доклад»', () => {
     expect(await talkState(page)).toBe('1:0:slideshow');
   });
 
-  test('F5 посреди доклада возвращает на то же место без полёта', async ({ page }) => {
+  test('F5 посреди презентации возвращает на то же место без полёта', async ({ page }) => {
     await page.goto('/?mode=talk#s=3&p=0');
     await ready(page);
     await settled(page, '3:0:slideshow');
@@ -88,7 +100,7 @@ test.describe('«Доклад»', () => {
     await settled(page, '2:0:card');
   });
 
-  test('потеря WebGL-контекста не останавливает доклад', async ({ page }) => {
+  test('потеря WebGL-контекста не останавливает презентацию', async ({ page }) => {
     // пролётная остановка: карта видна и рендерится (слайдшоу ставит рендер на паузу)
     await page.goto('/?mode=talk#s=2&p=0');
     await ready(page);

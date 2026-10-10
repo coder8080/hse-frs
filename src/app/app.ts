@@ -346,8 +346,12 @@ function centerLift(model: THREE.Object3D, view: Viewpoint, camera: THREE.Perspe
   return Number.isFinite(lo) ? -(lo + hi) / 4 : 0;
 }
 
-/** Раздвигает круги радиусов r, чтобы не пересекались (несколько итераций попарного отталкивания). */
-export function spread(points: { x: number; z: number }[], r: number[], gap = 1.2): { x: number; z: number }[] {
+/**
+ * Раздвигает круги радиусов r, чтобы не пересекались (несколько итераций попарного отталкивания).
+ * Зазор — пара ячеек рельефа: между площадками соседей (Свияжск внизу, Иннополис на высоком берегу)
+ * должен поместиться склон, иначе он прорежет подставку.
+ */
+export function spread(points: { x: number; z: number }[], r: number[], gap = 2.4): { x: number; z: number }[] {
   const p = points.map((q) => ({ ...q }));
   for (let it = 0; it < 60; it++) {
     let moved = false;
