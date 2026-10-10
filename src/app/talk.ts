@@ -98,11 +98,17 @@ export function startTalk(route: RouteData, stage: Stage): TalkHandle {
     // QR — внизу этикетки финальной остановки (панель перерисовывается при открытии, поэтому вставляем каждый раз)
     const qrOn = state.stopIndex === last && state.phase !== 'flying';
     const panel = slideshow.el.querySelector('.ui-ss__panel');
+    let refit = false;
     if (qrOn && panel && qr.el.parentElement !== panel) {
       panel.insertBefore(qr.el, panel.querySelector('.ui-ss__count'));
-      slideshow.fitPanel();
+      refit = true;
     }
-    qr.toggle(qrOn);
+    if (qr.el.hidden === qrOn) {
+      qr.toggle(qrOn);
+      refit = true;
+    }
+    // подгонка текста — после того как QR стал видимым, иначе его высота не учитывается
+    if (refit) slideshow.fitPanel();
     document.body.dataset.talk = `${state.stopIndex}:${state.photoIndex}:${state.phase}`;
   }
 

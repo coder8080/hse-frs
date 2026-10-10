@@ -23,8 +23,9 @@ const ARRIVAL_HOLD_MS = 1000;
 /**
  * «Доклад», пролётная остановка: карточка прижата к левому нижнему углу, поэтому миниатюра
  * сдвигается вправо-вверх (доли экрана), чтобы карточка её не закрывала.
+ * y — добавка к центровке модели по высоте (см. centerLift).
  */
-const CARD_FRAMING = { landscape: { x: 0.15, y: 0.02 }, portrait: { x: 0, y: 0.18 } };
+const CARD_FRAMING = { landscape: { x: 0.15, y: 0 }, portrait: { x: 0, y: 0.16 } };
 
 export interface AppOptions {
   mode: Mode;
@@ -60,6 +61,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
     scales.map((k, i) => (route.stops[i].kind === 'intro' ? 0 : k * 4.8)),
   );
   const minis: Miniature[] = [];
+  const miniAt: THREE.Object3D[] = [];
   const pickables: THREE.Object3D[] = [];
   route.stops.forEach((s, i) => {
     if (s.kind === 'intro') return;
@@ -72,6 +74,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
     m.group.traverse((o) => (o.userData.stopIndex = i));
     scene.add(m.group);
     minis.push(m);
+    miniAt[i] = m.group;
     pickables.push(m.group);
   });
 
@@ -86,6 +89,10 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
     const ll = unproject(places[i].x, places[i].z);
     return viewpoint(ll.lat, ll.lon, s.kind, heightAt);
   });
+
+  // пролётные: модели разной высоты (остров Свияжска плоский, трубы Нижнекамска высокие) —
+  // кадр по вертикали ставит середину модели в середину экрана
+  const lift = route.stops.map((s, i) => (opts.mode === 'talk' && s.kind === 'flythrough' ? centerLift(miniAt[i], views[i], camera) : 0));
 
   function overviewNow(): Viewpoint {
     const aspect = window.innerWidth / Math.max(1, window.innerHeight);
@@ -141,7 +148,8 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
   const framing = { x: 0, y: 0, goal: { x: 0, y: 0 } };
   const framingFor = (i: number) => {
     if (opts.mode !== 'talk' || route.stops[i].kind !== 'flythrough') return { x: 0, y: 0 };
-    return window.innerWidth >= window.innerHeight ? CARD_FRAMING.landscape : CARD_FRAMING.portrait;
+    const base = window.innerWidth >= window.innerHeight ? CARD_FRAMING.landscape : CARD_FRAMING.portrait;
+    return { x: base.x, y: base.y + lift[i] };
   };
   function applyFraming(dt: number) {
     const k = dt < 0 ? 1 : 1 - Math.exp(-dt * 4);
@@ -295,6 +303,42 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
     stats: () => ({ ...world.stats, calls: view.renderer.info.render.calls, triangles: view.renderer.info.render.triangles, frame: view.renderer.info.render.frame }),
     renderer: view.renderer,
   };
+}
+
+/**
+ * На сколько (доля высоты экрана, для setViewOffset) поднять кадр, чтобы модель из точки view
+ * стояла по центру по вертикали. Вертикаль в NDC от пропорций экрана не зависит — считаем один раз.
+ */
+function centerLift(model: THREE.Object3D, view: Viewpoint, camera: THREE.PerspectiveCamera): number {
+  const cam = camera.clone();
+  cam.clearViewOffset();
+  cam.position.copy(view.position);
+  cam.lookAt(view.target);
+  cam.updateMatrixWorld();
+  model.updateWorldMatrix(true, true);
+  const v = new THREE.Vector3();
+  const inst = new THREE.Matrix4();
+  const world = new THREE.Matrix4();
+  let lo = Infinity;
+  let hi = -Infinity;
+  model.traverse((o) => {
+    if (!(o instanceof THREE.Mesh) || !o.visible) return;
+    const pos = o.geometry.getAttribute('position');
+    const n = o instanceof THREE.InstancedMesh ? o.count : 1;
+    for (let k = 0; k < n; k++) {
+      world.copy(o.matrixWorld);
+      if (o instanceof THREE.InstancedMesh) {
+        o.getMatrixAt(k, inst);
+        world.multiply(inst);
+      }
+      for (let j = 0; j < pos.count; j++) {
+        v.fromBufferAttribute(pos, j).applyMatrix4(world).project(cam);
+        lo = Math.min(lo, v.y);
+        hi = Math.max(hi, v.y);
+      }
+    }
+  });
+  return Number.isFinite(lo) ? -(lo + hi) / 4 : 0;
 }
 
 /** Раздвигает круги радиусов r, чтобы не пересекались (несколько итераций попарного отталкивания). */
