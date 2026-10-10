@@ -1386,7 +1386,7 @@ finding above. Run with Claude Code or Codex; checkbox as you ship.
   - Surfaced by: Section 1 — #1 (R2), #2 (R3), Section 2 #4 (R13)
   - Files: src/talk/machine.ts, tests/machine.test.ts
   - Verify: `npx vitest run tests/machine.test.ts`
-- [ ] **T2 (P1, human: ~0,5 дня / CC: ~15 мин)** — CI — GitHub Actions: npm ci → схема → vitest → build → playwright → Pages; репозиторий публичный
+- [x] **T2 (P1, human: ~0,5 дня / CC: ~15 мин)** — CI — GitHub Actions: npm ci → схема → vitest → build → playwright → Pages; репозиторий публичный
   - Surfaced by: Scope #1 (R1), Section 3 (R14)
   - Files: .github/workflows/deploy.yml, playwright.config.ts
   - Verify: push в main → зелёный запуск и сайт на Pages
