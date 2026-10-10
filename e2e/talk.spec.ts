@@ -3,6 +3,7 @@ import { press, ready, settled, talkState } from './helpers';
 
 test.describe('«Доклад»', () => {
   test('полный прогон с кликера: от обложки до финала, без внешних запросов', async ({ page, baseURL }) => {
+    test.setTimeout(240_000);
     const external: string[] = [];
     page.on('request', (r) => {
       if (!r.url().startsWith(baseURL!) && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) external.push(r.url());
@@ -24,6 +25,8 @@ test.describe('«Доклад»', () => {
       if (s === last) break; // «Вперёд» на финале ничего не делает
       last = s;
       await press(page, 'PageDown');
+      // полёт доводится вторым нажатием, как докладчик с кликером (иначе прогон слишком долгий на CI)
+      if ((await talkState(page))?.endsWith(':flying')) await press(page, 'PageDown');
     }
     expect(last.startsWith('12:')).toBe(true);
     await expect(page.locator('.app-qr')).toBeVisible();
