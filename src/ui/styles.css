@@ -330,14 +330,16 @@
 }
 .ui-slideshow[data-variant='talk'] .ui-ss__sheet {
   gap: calc(var(--u) * 4.5);
-  max-width: calc(var(--u) * 172);
+  max-width: calc(var(--u) * 176);
 }
 .ui-slideshow[data-variant='talk'] .ui-ss__stage {
   font-size: max(12px, calc(var(--u) * 1.95));
 }
 .ui-slideshow[data-variant='talk'] .ui-ss__panel {
-  width: max(340px, calc(var(--u) * 68));
-  padding: calc(var(--u) * 5.5) calc(var(--u) * 5.5) calc(var(--u) * 4.2);
+  /* --fit < 1 ставит Slideshow.fitPanel, если текст не влезает по высоте */
+  --fit: 1;
+  width: max(340px, calc(var(--u) * 74));
+  padding: calc(var(--u) * 5 * var(--fit)) calc(var(--u) * 5) calc(var(--u) * 4 * var(--fit));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -348,7 +350,7 @@
 }
 .ui-slideshow[data-variant='talk'] .ui-ss__count {
   margin-top: auto;
-  padding-top: calc(var(--u) * 3);
+  padding-top: calc(var(--u) * 3 * var(--fit));
   justify-content: flex-end;
   font-size: max(12px, calc(var(--u) * 2.1));
   color: var(--ui-ink-3);
@@ -361,28 +363,28 @@
   font-size: max(11px, calc(var(--u) * 1.75));
 }
 .ui-slideshow[data-variant='talk'] .ui-ss__title {
-  font-size: max(24px, calc(var(--u) * 5.6));
+  font-size: max(22px, calc(var(--u) * 5.6 * var(--fit)));
 }
 .ui-slideshow[data-variant='talk'] .ui-ss__subtitle {
-  font-size: max(15px, calc(var(--u) * 2.6));
+  font-size: max(14px, calc(var(--u) * 2.6 * var(--fit)));
 }
 .ui-ss__theses,
 .ui-ss__lead {
-  margin: calc(var(--u) * 4) 0 0;
-  padding: calc(var(--u) * 3.5) 0 0;
+  margin: calc(var(--u) * 4 * var(--fit, 1)) 0 0;
+  padding: calc(var(--u) * 3.5 * var(--fit, 1)) 0 0;
   border-top: 2px solid var(--ui-ink);
 }
 .ui-ss__theses {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: calc(var(--u) * 2.6);
+  gap: calc(var(--u) * 2.6 * var(--fit, 1));
   counter-reset: thesis;
 }
 .ui-ss__theses li {
   position: relative;
   padding-left: max(24px, calc(var(--u) * 5));
-  font-size: max(15px, calc(var(--u) * 3.1));
+  font-size: max(14px, calc(var(--u) * 3.1 * var(--fit, 1)));
   font-weight: 560;
   line-height: 1.28;
   color: var(--ui-ink);
@@ -400,7 +402,7 @@
   color: var(--ui-accent);
 }
 .ui-ss__lead {
-  font-size: max(15px, calc(var(--u) * 3.1));
+  font-size: max(14px, calc(var(--u) * 3.1 * var(--fit, 1)));
   line-height: 1.3;
 }
 
@@ -744,7 +746,8 @@
 .ui-preload {
   z-index: 50;
   left: 50%;
-  bottom: calc(var(--u) * 6 + var(--ui-safe-b));
+  /* сверху: внизу слева карточка пролётной остановки */
+  top: calc(var(--u) * 4 + var(--ui-safe-t));
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;

@@ -3,7 +3,7 @@
 // tour — «Путешествие»: все фото с кнопками/свайпом, полный текст, источники, связка.
 // В DOM живут только текущее и соседние фото (остальные освобождаются).
 import type { PhotoData, StopData } from '../content-types';
-import { FADE_MS, h, reducedMotion, setShown } from './dom';
+import { FADE_MS, h, reducedMotion, setShown, typo } from './dom';
 import { createPhotoFigure, releasePhotoFigure } from './photo';
 
 export type SlideshowVariant = 'talk' | 'tour';
@@ -89,6 +89,8 @@ export class Slideshow {
       });
     }
     (opts.parent ?? document.body).append(this.el);
+    // метрики шрифтов меняются после их загрузки — подгоняем этикетку ещё раз
+    if (!tour) document.fonts?.ready.then(() => this.fitPanel());
   }
 
   get isOpen(): boolean {
@@ -125,6 +127,7 @@ export class Slideshow {
     if (!this.opened) {
       this.opened = true;
       setShown(this.el, true);
+      if (this.opts.variant === 'talk') window.addEventListener('resize', this.onResize);
       if (this.opts.variant === 'tour') {
         if (this.opts.keyboard !== false) document.addEventListener('keydown', this.onKey);
         this.panel.scrollTop = 0;
@@ -135,6 +138,22 @@ export class Slideshow {
     } else if (!sameStop) {
       this.panel.scrollTop = 0;
       this.sheet.scrollTop = 0;
+    }
+    if (!sameStop) this.fitPanel();
+  }
+
+  /**
+   * talk: если тезисы не влезают в этикетку по высоте, текст мельчает ступенями (--fit 1 → 0,6).
+   * Тексты правит команда — длина заранее неизвестна, а экраны ноутбуков разные.
+   */
+  fitPanel(): void {
+    if (this.opts.variant !== 'talk' || this.el.hidden) return;
+    const panel = this.panel;
+    let fit = 1;
+    panel.style.setProperty('--fit', '1');
+    while (panel.scrollHeight > panel.clientHeight + 1 && fit > 0.6) {
+      fit = Math.round((fit - 0.04) * 100) / 100;
+      panel.style.setProperty('--fit', String(fit));
     }
   }
 
@@ -183,6 +202,7 @@ export class Slideshow {
     if (!this.opened) return;
     this.opened = false;
     document.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('resize', this.onResize);
     setShown(this.el, false);
     this.opts.onClose?.();
   }
@@ -201,6 +221,8 @@ export class Slideshow {
     this.showPhoto(this.index + dir);
     if (this.index !== before) this.opts.onPhotoChange?.(this.index);
   }
+
+  private readonly onResize = () => this.fitPanel();
 
   private readonly onKey = (e: KeyboardEvent) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -252,8 +274,8 @@ export class Slideshow {
 
     if (!tour) {
       const theses = stop.theses.slice(0, 4);
-      if (theses.length) parts.push(h('ol.ui-ss__theses', {}, ...theses.map((t) => h('li', {}, t))));
-      else parts.push(h('p.ui-ss__lead', {}, stop.card));
+      if (theses.length) parts.push(h('ol.ui-ss__theses', {}, ...theses.map((t) => h('li', {}, typo(t)))));
+      else parts.push(h('p.ui-ss__lead', {}, typo(stop.card)));
       parts.push(this.progress);
     } else {
       if (stop.link) parts.push(h('p.ui-ss__link', {}, stop.link));

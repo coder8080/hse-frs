@@ -1,7 +1,7 @@
 // Компактная карточка пролётной остановки в «Докладе»: одно фото, название, одна строка.
 // Прижата к левому нижнему углу, карта остаётся видна (без размытия и паузы рендера).
 import type { StopData } from '../content-types';
-import { attributionText, h, setShown } from './dom';
+import { attributionText, h, setShown, typo } from './dom';
 import { createPhotoFigure, releasePhotoFigure } from './photo';
 
 export interface CardOptions {
@@ -38,7 +38,7 @@ export class Card {
       this.body.replaceChildren(
         h('p.ui-kicker', {}, o.label ?? stop.category),
         h('h2.ui-card__title', {}, stop.title),
-        h('p.ui-card__line', {}, stop.card),
+        h('p.ui-card__line', {}, typo(stop.card)),
       );
       if (photo) this.body.append(h('p.ui-card__credit', {}, attributionText(photo)));
     }

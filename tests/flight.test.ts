@@ -55,7 +55,8 @@ describe('buildFlight', () => {
 
   it('финал поднимается над картой и держит паузу', () => {
     const f = buildFlight(a, b, { type: 'final' }, flat, () => undefined);
-    expect(f.hold?.seconds).toBe(1.5);
+    expect(f.hold?.seconds).toBeLessThanOrEqual(0.5);
+    expect(f.duration + f.hold!.seconds).toBeLessThanOrEqual(4);
     expect(f.position.getPoint(f.hold!.at).y).toBeGreaterThan(100);
   });
 });

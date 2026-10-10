@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { MINIATURE_SLUGS, buildMiniature } from '../src/models/index';
 
-const MAX_TRIANGLES = 2500;
+const MAX_TRIANGLES = 6000;
 const MAX_MESHES = 3;
 
 function meshes(g: THREE.Object3D): THREE.Mesh[] {

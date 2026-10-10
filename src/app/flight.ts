@@ -124,7 +124,8 @@ export function buildFlight(
     mid.y = top.position.y * 0.8;
     const position = new THREE.CatmullRomCurve3([from.position.clone(), mid, top.position.clone(), to.position.clone()], false, 'centripetal');
     const target = new THREE.CatmullRomCurve3([from.target.clone(), top.target.clone(), top.target.clone(), to.target.clone()], false, 'centripetal');
-    return { position, target, duration: 5, hold: { at: 0.62, seconds: 1.5 } };
+    // короткий взгляд на всю карту (весь пройденный маршрут) и пикирование; ~3,8 с вместе с паузой
+    return { position, target, duration: 3.4, hold: { at: 0.55, seconds: 0.4 } };
   }
 
   let ground: XZ[] = [];

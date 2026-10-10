@@ -59,6 +59,16 @@ export function setShown(el: HTMLElement, shown: boolean): void {
   }
 }
 
+/** Неразрывные пробелы: «30 %», «100 тыс.», «2,3 млрд т», «№ 3» не разрываются переносом строки. */
+export function typo(s: string): string {
+  // \b в JS не работает с кириллицей, поэтому конец слова — явный просмотр вперёд
+  const end = '(?=[\\s,.;:)»]|$)';
+  return s
+    .replace(new RegExp(`(\\d) (?=%|‰|тыс\\.|млн${end}|млрд${end}|км|м${end}|т${end}|г\\.|год)`, 'g'), '$1\u00a0')
+    .replace(/(№|ст\.) (?=\d)/g, '$1\u00a0')
+    .replace(new RegExp(`(млн|млрд|тыс\\.) (?=т${end}|км|чел)`, 'g'), '$1\u00a0');
+}
+
 /** Автор и лицензия фото в одну строку. */
 export function attributionText(p: { author: string; license: string }): string {
   return `Фото: ${[p.author, p.license].filter(Boolean).join(', ')}`;

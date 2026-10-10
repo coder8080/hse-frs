@@ -20,6 +20,11 @@ import { startTour } from './tour';
 import './app.css';
 
 const ARRIVAL_HOLD_MS = 1000;
+/**
+ * «Доклад», пролётная остановка: карточка прижата к левому нижнему углу, поэтому миниатюра
+ * сдвигается вправо-вверх (доли экрана), чтобы карточка её не закрывала.
+ */
+const CARD_FRAMING = { landscape: { x: 0.14, y: 0.1 }, portrait: { x: 0, y: 0.18 } };
 
 export interface AppOptions {
   mode: Mode;
@@ -132,6 +137,25 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
   let finishNow: (() => void) | null = null;
   let skipHold = false;
 
+  // сдвиг кадра через viewOffset камеры: плавно едет к цели во время полёта
+  const framing = { x: 0, y: 0, goal: { x: 0, y: 0 } };
+  const framingFor = (i: number) => {
+    if (opts.mode !== 'talk' || route.stops[i].kind !== 'flythrough') return { x: 0, y: 0 };
+    return window.innerWidth >= window.innerHeight ? CARD_FRAMING.landscape : CARD_FRAMING.portrait;
+  };
+  function applyFraming(dt: number) {
+    const k = dt < 0 ? 1 : 1 - Math.exp(-dt * 4);
+    framing.x += (framing.goal.x - framing.x) * k;
+    framing.y += (framing.goal.y - framing.y) * k;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    if (Math.abs(framing.x) < 1e-4 && Math.abs(framing.y) < 1e-4) {
+      if (camera.view?.enabled) camera.clearViewOffset();
+      return;
+    }
+    camera.setViewOffset(w, h, -framing.x * w, framing.y * h, w, h);
+  }
+
   const stage: Stage = {
     canvas: view.renderer.domElement,
     stops: route.stops,
@@ -149,6 +173,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
       const f = buildFlight(a, b, transition, heightAt, river);
       flying = true;
       skipHold = false;
+      framing.goal = framingFor(to);
       pendingDone = o.onDone;
       view.setPaused(false);
       const done = () => {
@@ -180,6 +205,8 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
       pendingDone = null;
       rig.jump(views[i]);
       syncControls(views[i]);
+      framing.goal = framingFor(i);
+      applyFraming(-1);
     },
     setPaused(p) {
       view.setPaused(p);
@@ -247,6 +274,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
     t += dt;
     if (controls.enabled) controls.update();
     else rig.update(dt);
+    applyFraming(dt);
     for (const m of minis) m.update?.(t);
     if (!labels.hidden) placeLabels();
   });
