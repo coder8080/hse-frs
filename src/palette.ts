@@ -11,6 +11,15 @@ export const PALETTE = {
   upland: '#d8c995',
   ridge: '#c7a878',
   outside: '#e6e2d6', // земля за границей Татарстана, приглушённая
+  // растительный покров (текстура земли)
+  forestFloor: '#5b8a4c',
+  meadow: '#a9c784',
+  town: '#cfc3b2',
+  wetland: '#8cb39a',
+  // деревья
+  pine: '#3f6b45',
+  leaf: '#5f8f4a',
+  trunk: '#7a5a3e',
   // вода
   water: '#5b9ec4',
   waterDeep: '#3f7fa6',
@@ -35,6 +44,9 @@ export const PALETTE = {
 } as const;
 
 export type PaletteKey = keyof typeof PALETTE;
+
+/** Лоскуты полей: спелая пшеница, озимые, жнивьё, всходы, рапс. */
+export const FIELDS = ['#e0d08c', '#cdd486', '#d9c27f', '#bfcd7a', '#e6d9a4'] as const;
 
 /** Направление солнца для запечённого освещения (R15): с юго-запада, сверху. */
 export const SUN_DIR = { x: -0.45, y: 0.8, z: 0.4 } as const;

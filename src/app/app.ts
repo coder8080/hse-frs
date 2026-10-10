@@ -39,8 +39,17 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
   loading.textContent = 'Загрузка карты…';
   document.body.append(loading);
 
+  // места миниатюр; близкие (кремль и слобода в 2 км) раздвигаются, чтобы не наезжали
+  const scales = route.stops.map((s) => MINIATURE_SCALE * (s.kind === 'key' ? 1 : 0.9));
+  const places = spread(
+    route.stops.map((s) => project(s.lat, s.lon)),
+    scales.map((k, i) => (route.stops[i].kind === 'intro' ? 0 : k * 4.8)),
+  );
+
   const data = await loadWorldData();
-  const world = buildWorld(data);
+  // вокруг подставок миниатюр — поляны, чтобы деревья карты не прорастали сквозь модели
+  const clearings = places.flatMap((p, i) => (route.stops[i].kind === 'intro' ? [] : [{ x: p.x, z: p.z, r: scales[i] * 4.8 + 0.5 }]));
+  const world = buildWorld(data, { clearings, treeRadius: opts.device.phone ? 24 : 36 });
   const view = createRenderer(root, { lowQuality: opts.device.phone });
   const { scene, camera } = view;
   scene.add(world.group);
@@ -54,12 +63,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
   fitFog();
   window.addEventListener('resize', fitFog);
 
-  // миниатюры на рельефе; близкие (кремль и слобода в 2 км) раздвигаются, чтобы не наезжали
-  const scales = route.stops.map((s) => MINIATURE_SCALE * (s.kind === 'key' ? 1 : 0.9));
-  const places = spread(
-    route.stops.map((s) => project(s.lat, s.lon)),
-    scales.map((k, i) => (route.stops[i].kind === 'intro' ? 0 : k * 4.8)),
-  );
+  // миниатюры на рельефе (размещены выше, до сборки мира)
   const minis: Miniature[] = [];
   const miniAt: THREE.Object3D[] = [];
   const pickables: THREE.Object3D[] = [];
@@ -283,6 +287,7 @@ export async function startApp(root: HTMLElement, route: RouteData, opts: AppOpt
     if (controls.enabled) controls.update();
     else rig.update(dt);
     applyFraming(dt);
+    world.updateView(camera);
     for (const m of minis) m.update?.(t);
     if (!labels.hidden) placeLabels();
   });

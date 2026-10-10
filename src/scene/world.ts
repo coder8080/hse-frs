@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { project, type XZ } from '../geo';
 import { buildBorder } from './border';
 import { Dem } from './dem';
+import { buildForest, type Clearing, type Forest } from './forest';
 import type { P2 } from './polygon';
 import { buildTerrain } from './terrain';
 import type { WorldData } from './types';
@@ -20,10 +21,20 @@ export interface World {
   water: readonly WaterBody[];
   /** Анимация воды: время в секундах. Дёшево — одна запись uniform. */
   update(timeSec: number): void;
+  /** Деревья вокруг камеры: подгрузка и скрытие квадратов леса. Вызывать каждый кадр. */
+  updateView(camera: THREE.Camera): void;
+  forest: Forest;
   stats: { triangles: number; meshes: number };
 }
 
-export function buildWorld(data: WorldData): World {
+export interface WorldOptions {
+  /** Поляны без деревьев (подставки миниатюр). */
+  clearings?: readonly Clearing[];
+  /** Дальность видимости деревьев, км (на телефоне меньше). */
+  treeRadius?: number;
+}
+
+export function buildWorld(data: WorldData, opts: WorldOptions = {}): World {
   const dem = new Dem(data.terrain);
   const water = prepareWater(data.water, dem);
   const rivers = riverLines(data.rivers);
@@ -34,7 +45,7 @@ export function buildWorld(data: WorldData): World {
     }),
   );
 
-  const terrain = buildTerrain({ dem, border, water, rivers });
+  const terrain = buildTerrain({ dem, border, water, rivers, landcover: data.landcover });
   const surface = (x: number, z: number) => {
     const h = terrain.heightAt(x, z);
     const w = waterLevelAt(water, x, z);
@@ -43,7 +54,7 @@ export function buildWorld(data: WorldData): World {
 
   const group = new THREE.Group();
   group.name = 'world';
-  const meshes = [terrain.mesh, buildReservoirs(water), buildRivers(rivers, terrain.heightAt, water), buildBorder(border, surface)];
+  const meshes = [terrain.mesh, terrain.sides, buildReservoirs(water), buildRivers(rivers, terrain.heightAt, water), buildBorder(border, surface)];
   // порядок отрисовки: непрозрачное, рельеф первым; ленты поверх воды и рельефа
   meshes.forEach((m, i) => {
     m.renderOrder = i;
@@ -51,6 +62,9 @@ export function buildWorld(data: WorldData): World {
     m.updateMatrix();
     group.add(m);
   });
+
+  const forest = buildForest({ ground: terrain.ground, heightAt: terrain.heightAt, clearings: opts.clearings, radius: opts.treeRadius });
+  group.add(forest.group);
 
   let triangles = 0;
   for (const m of meshes) {
@@ -66,6 +80,10 @@ export function buildWorld(data: WorldData): World {
     update(timeSec: number) {
       waterTime.value = timeSec;
     },
+    updateView(camera: THREE.Camera) {
+      forest.update(camera);
+    },
+    forest,
     stats: { triangles, meshes: meshes.length },
   };
 }

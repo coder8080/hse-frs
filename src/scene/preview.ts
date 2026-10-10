@@ -43,6 +43,7 @@ async function main(): Promise<void> {
   r.onFrame((_dt, t) => {
     controls.update();
     world.update(t);
+    world.updateView(r.camera);
   });
   r.start();
   // для отладки из консоли и e2e

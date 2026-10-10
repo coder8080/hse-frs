@@ -10,5 +10,11 @@
     "license": "Open Database License (ODbL) 1.0",
     "notice": "© OpenStreetMap contributors",
     "url": "https://www.openstreetmap.org/copyright"
+  },
+  "landcover": {
+    "source": "ESA WorldCover 10 m 2021 v200 (AWS Open Data, s3://esa-worldcover)",
+    "license": "CC BY 4.0",
+    "notice": "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium",
+    "url": "https://esa-worldcover.org/"
   }
 }

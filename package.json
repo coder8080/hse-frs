@@ -16,7 +16,8 @@
     "e2e": "playwright test",
     "data:dem": "tsx scripts/dem.ts",
     "data:osm": "tsx scripts/osm.ts",
-    "photo": "tsx scripts/photos.ts"
+    "photo": "tsx scripts/photos.ts",
+    "data:landcover": "tsx scripts/landcover.ts"
   },
   "dependencies": {
     "@fontsource-variable/jost": "^5.3.0",

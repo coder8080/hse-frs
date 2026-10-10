@@ -1,11 +1,13 @@
-// Рельеф: сетка ~230×165 ячеек с цветами по высоте, запечённым светом (R15) и «прорезями»
-// под водохранилищами и реками. Граненый low-poly: у каждого треугольника свой цвет.
+// Рельеф: гладкая сетка ~460×330 ячеек с «прорезями» под водохранилищами и реками.
+// Цвет — текстура земли (покров + запечённый свет, ground.ts); бока подставки — отдельным мешем.
 // Чистая геометрия: работает в Node без WebGL (тест бюджета).
 import * as THREE from 'three';
 import { WORLD, elevToY } from '../geo';
 import { PALETTE, SUN_DIR } from '../palette';
 import type { Dem } from './dem';
+import { buildGround, type Ground } from './ground';
 import { distToSegment, fillRow, rowCrossings, type P2 } from './polygon';
+import type { WorldData } from './types';
 import type { RiverLine, WaterBody } from './water';
 
 export interface TerrainInput {
@@ -14,12 +16,17 @@ export interface TerrainInput {
   border: P2[][];
   water: readonly WaterBody[];
   rivers: readonly RiverLine[];
+  landcover: WorldData['landcover'];
   segX?: number;
   segZ?: number;
 }
 
 export interface Terrain {
   mesh: THREE.Mesh;
+  /** Бока подставки диорамы. */
+  sides: THREE.Mesh;
+  /** Текстура и флаги покрова (для деревьев). */
+  ground: Ground;
   /** Высота поверхности итогового меша рельефа (ед. мира). */
   heightAt(x: number, z: number): number;
   /** Нижняя грань «подставки» диорамы. */
@@ -34,41 +41,12 @@ const SHORE_LIFT_M = 1.5;
 /** Прорезь под речной лентой, м. */
 const RIVER_STEP_M = 5;
 
-// Ступени цвета по высоте (м)
-const BANDS: [number, string][] = [
-  [60, PALETTE.lowland],
-  [130, PALETTE.lowland],
-  [180, PALETTE.plain],
-  [250, PALETTE.upland],
-  [340, PALETTE.ridge],
-];
-
 const lin = (hex: string) => new THREE.Color(hex);
-
-function elevColor(m: number, out: THREE.Color): THREE.Color {
-  if (m <= BANDS[0][0]) return out.copy(lin(BANDS[0][1]));
-  for (let i = 1; i < BANDS.length; i++) {
-    if (m <= BANDS[i][0]) {
-      const t = (m - BANDS[i - 1][0]) / (BANDS[i][0] - BANDS[i - 1][0]);
-      // smoothstep — мягкие, но читаемые переходы
-      const s = t * t * (3 - 2 * t);
-      return out.copy(lin(BANDS[i - 1][1])).lerp(lin(BANDS[i][1]), s);
-    }
-  }
-  return out.copy(lin(BANDS[BANDS.length - 1][1]));
-}
-
-/** Детерминированный шум 0…1 для лёгкой «ручной» неровности цвета граней. */
-function hash(i: number, j: number): number {
-  let h = (i * 374761393 + j * 668265263) | 0;
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
-}
 
 export function buildTerrain(input: TerrainInput): Terrain {
   const { dem } = input;
-  const NX = input.segX ?? 232;
-  const NZ = input.segZ ?? 164;
+  const NX = input.segX ?? 464;
+  const NZ = input.segZ ?? 328;
   const dx = WORLD.width / NX;
   const dz = WORLD.depth / NZ;
   const VX = NX + 1;
@@ -85,13 +63,7 @@ export function buildTerrain(input: TerrainInput): Terrain {
   const y = new Float32Array(nv);
   for (let k = 0; k < nv; k++) y[k] = elevToY(meters[k]);
 
-  // 2. внутри Татарстана (для приглушения соседей)
-  const inside = new Float32Array(nv);
-  for (let j = 0; j < VZ; j++) {
-    fillRow(rowCrossings(input.border, vz(j)), WORLD.minX, dx, VX, (i) => (inside[j * VX + i] = 1));
-  }
-
-  // 3. вода: вершины внутри водохранилищ и расстояние до берега (растеризация рёбер)
+  // 2. вода: вершины внутри водохранилищ и расстояние до берега (растеризация рёбер)
   const waterLevel = new Float32Array(nv).fill(NaN);
   const shoreDist = new Float32Array(nv).fill(Infinity);
   const shoreLevel = new Float32Array(nv).fill(NaN);
@@ -137,7 +109,7 @@ export function buildTerrain(input: TerrainInput): Terrain {
     else if (shoreDist[k] < R) y[k] = Math.max(y[k], shoreLevel[k] + lift);
   }
 
-  // 4. реки: прорезь под лентой
+  // 3. реки: прорезь под лентой
   const riverMark = new Uint8Array(nv);
   for (const r of input.rivers) {
     const rad = r.width * 0.5 + cell * 0.55;
@@ -158,9 +130,9 @@ export function buildTerrain(input: TerrainInput): Terrain {
   const rstep = elevToY(RIVER_STEP_M);
   for (let k = 0; k < nv; k++) if (riverMark[k] && Number.isNaN(waterLevel[k])) y[k] -= rstep;
 
-  // 5. затенение впадин (простое AO): насколько вершина ниже среднего по окрестности
+  // 4. затенение впадин (простое AO): насколько вершина ниже среднего по окрестности
   const ao = new Float32Array(nv);
-  const AR = 3;
+  const AR = 5;
   for (let j = 0; j < VZ; j++) {
     for (let i = 0; i < VX; i++) {
       let s = 0;
@@ -180,79 +152,64 @@ export function buildTerrain(input: TerrainInput): Terrain {
     }
   }
 
-  // 6. граненая геометрия с запечённым светом
-  const sun = new THREE.Vector3(SUN_DIR.x, SUN_DIR.y, SUN_DIR.z).normalize();
+  // 5. гладкая сетка с UV; цвет и свет — в текстуре земли (ground.ts)
+  const ground = buildGround({
+    dem,
+    landcover: input.landcover,
+    border: input.border,
+    water: input.water,
+    rivers: input.rivers,
+    occlusion: { grid: ao, nx: NX, nz: NZ },
+  });
+
   let minY = Infinity;
   for (let k = 0; k < nv; k++) if (y[k] < minY) minY = y[k];
   const baseY = minY - 1.4;
-  const sideTris = 2 * (NX + NZ) * 2;
-  const triangles = NX * NZ * 2 + sideTris;
-  const pos = new Float32Array(triangles * 9);
-  const col = new Float32Array(triangles * 9);
-  let t = 0;
-
-  const outside = lin(PALETTE.outside);
-  const shallow = lin(PALETTE.water).lerp(lin(PALETTE.lowland), 0.35);
-  const beach = lin(PALETTE.stoneSand).lerp(lin(PALETTE.lowland), 0.3);
-  const riverBank = lin(PALETTE.lowland).lerp(lin(PALETTE.forest), 0.25);
-  const cA = new THREE.Color();
-  const cTmp = new THREE.Color();
-  const e1 = new THREE.Vector3();
-  const e2 = new THREE.Vector3();
-  const nrm = new THREE.Vector3();
-
-  const face = (a: number, b: number, c: number, ia: number, ja: number) => {
-    const ax = vx(a % VX), az = vz((a / VX) | 0);
-    const bx = vx(b % VX), bz = vz((b / VX) | 0);
-    const cx = vx(c % VX), cz = vz((c / VX) | 0);
-    const o = t * 9;
-    pos[o] = ax; pos[o + 1] = y[a]; pos[o + 2] = az;
-    pos[o + 3] = bx; pos[o + 4] = y[b]; pos[o + 5] = bz;
-    pos[o + 6] = cx; pos[o + 7] = y[c]; pos[o + 8] = cz;
-    e1.set(bx - ax, y[b] - y[a], bz - az);
-    e2.set(cx - ax, y[c] - y[a], cz - az);
-    nrm.crossVectors(e1, e2).normalize();
-    // цвет грани: высота до прорезей, вода, соседи
-    const m = (meters[a] + meters[b] + meters[c]) / 3;
-    elevColor(m, cA);
-    const wet = (+!Number.isNaN(waterLevel[a]) + +!Number.isNaN(waterLevel[b]) + +!Number.isNaN(waterLevel[c])) / 3;
-    // полностью под водой — отмель; на урезе — песчаный берег
-    if (wet === 1) cA.copy(shallow);
-    else if (wet > 0) cA.lerp(beach, 0.35 + 0.35 * wet);
-    const rv = (riverMark[a] + riverMark[b] + riverMark[c]) / 3;
-    if (rv > 0 && wet === 0) cA.lerp(riverBank, rv * 0.6);
-    const ins = (inside[a] + inside[b] + inside[c]) / 3;
-    if (ins < 1) cA.lerp(outside, (1 - ins) * 0.6);
-    // свет: Ламберт от солнца + рассеянный, AO, лёгкий шум
-    const lambert = Math.max(0, nrm.dot(sun));
-    const occ = (ao[a] + ao[b] + ao[c]) / 3;
-    const shade = (0.58 + 0.5 * lambert) * occ * (0.975 + 0.05 * hash(ia, ja));
-    cA.multiplyScalar(shade);
-    for (let v = 0; v < 3; v++) {
-      col[o + v * 3] = cA.r;
-      col[o + v * 3 + 1] = cA.g;
-      col[o + v * 3 + 2] = cA.b;
+  const pos = new Float32Array(nv * 3);
+  const uv = new Float32Array(nv * 2);
+  for (let j = 0; j < VZ; j++) {
+    for (let i = 0; i < VX; i++) {
+      const k = j * VX + i;
+      pos[k * 3] = vx(i);
+      pos[k * 3 + 1] = y[k];
+      pos[k * 3 + 2] = vz(j);
+      uv[k * 2] = i / NX;
+      uv[k * 2 + 1] = j / NZ; // строка 0 текстуры — северный край (minZ)
     }
-    t++;
-  };
-
+  }
+  const index = new Uint32Array(NX * NZ * 6);
+  let t = 0;
   for (let j = 0; j < NZ; j++) {
     for (let i = 0; i < NX; i++) {
       const a = j * VX + i;
       const b = a + 1;
       const c = a + VX;
       const d = c + 1;
-      if ((i + j) % 2 === 0) {
-        face(a, c, d, i * 2, j);
-        face(a, d, b, i * 2 + 1, j);
-      } else {
-        face(a, c, b, i * 2, j);
-        face(b, c, d, i * 2 + 1, j);
-      }
+      // диагонали чередуются — как в heightAt
+      if ((i + j) % 2 === 0) index.set([a, c, d, a, d, b], t);
+      else index.set([a, c, b, b, c, d], t);
+      t += 6;
     }
   }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setIndex(new THREE.BufferAttribute(index, 1));
+  g.computeBoundingSphere();
+  g.computeBoundingBox();
+  const mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: ground.texture }));
+  mesh.name = 'terrain';
 
-  // 7. бока подставки: земля в разрезе, затенение по стороне света
+  // 6. бока подставки: земля в разрезе, затенение по стороне света
+  const sun = new THREE.Vector3(SUN_DIR.x, SUN_DIR.y, SUN_DIR.z).normalize();
+  const sideTris = 2 * (NX + NZ) * 2;
+  const spos = new Float32Array(sideTris * 9);
+  const scol = new Float32Array(sideTris * 9);
+  let st = 0;
+  const cTmp = new THREE.Color();
+  const e1 = new THREE.Vector3();
+  const e2 = new THREE.Vector3();
+  const nrm = new THREE.Vector3();
   const soilTop = lin(PALETTE.ridge).multiplyScalar(0.82);
   const soilBottom = lin(PALETTE.wood).multiplyScalar(0.7);
   const wall = (x0: number, z0: number, y0: number, x1: number, z1: number, y1: number, nx: number, nz: number) => {
@@ -266,26 +223,26 @@ export function buildTerrain(input: TerrainInput): Terrain {
       [x1, y1, z1, 1], [x0, baseY, z0, 0], [x1, baseY, z1, 0],
     ];
     for (let q = 0; q < 2; q++) {
-      const o = t * 9;
+      const o = st * 9;
       for (let v = 0; v < 3; v++) {
         const p = quad[q * 3 + v];
-        pos[o + v * 3] = p[0]; pos[o + v * 3 + 1] = p[1]; pos[o + v * 3 + 2] = p[2];
+        spos[o + v * 3] = p[0]; spos[o + v * 3 + 1] = p[1]; spos[o + v * 3 + 2] = p[2];
         const isTop = p[3] === 1;
-        col[o + v * 3] = isTop ? tr : bot.r;
-        col[o + v * 3 + 1] = isTop ? tg : bot.g;
-        col[o + v * 3 + 2] = isTop ? tb : bot.b;
+        scol[o + v * 3] = isTop ? tr : bot.r;
+        scol[o + v * 3 + 1] = isTop ? tg : bot.g;
+        scol[o + v * 3 + 2] = isTop ? tb : bot.b;
       }
       // разворот, если грань смотрит внутрь
-      e1.set(pos[o + 3] - pos[o], pos[o + 4] - pos[o + 1], pos[o + 5] - pos[o + 2]);
-      e2.set(pos[o + 6] - pos[o], pos[o + 7] - pos[o + 1], pos[o + 8] - pos[o + 2]);
+      e1.set(spos[o + 3] - spos[o], spos[o + 4] - spos[o + 1], spos[o + 5] - spos[o + 2]);
+      e2.set(spos[o + 6] - spos[o], spos[o + 7] - spos[o + 1], spos[o + 8] - spos[o + 2]);
       nrm.crossVectors(e1, e2);
       if (nrm.x * nx + nrm.z * nz < 0) {
         for (let k = 0; k < 3; k++) {
-          const p1 = pos[o + 3 + k]; pos[o + 3 + k] = pos[o + 6 + k]; pos[o + 6 + k] = p1;
-          const c1 = col[o + 3 + k]; col[o + 3 + k] = col[o + 6 + k]; col[o + 6 + k] = c1;
+          const p1 = spos[o + 3 + k]; spos[o + 3 + k] = spos[o + 6 + k]; spos[o + 6 + k] = p1;
+          const c1 = scol[o + 3 + k]; scol[o + 3 + k] = scol[o + 6 + k]; scol[o + 6 + k] = c1;
         }
       }
-      t++;
+      st++;
     }
   };
   for (let i = 0; i < NX; i++) {
@@ -297,14 +254,13 @@ export function buildTerrain(input: TerrainInput): Terrain {
     wall(vx(0), vz(j), y[j * VX], vx(0), vz(j + 1), y[(j + 1) * VX], -1, 0);
     wall(vx(NX), vz(j), y[j * VX + NX], vx(NX), vz(j + 1), y[(j + 1) * VX + NX], 1, 0);
   }
-
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  g.computeBoundingSphere();
-  g.computeBoundingBox();
-  const mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true }));
-  mesh.name = 'terrain';
+  const sg = new THREE.BufferGeometry();
+  sg.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+  sg.setAttribute('color', new THREE.BufferAttribute(scol, 3));
+  sg.computeBoundingSphere();
+  const sides = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ vertexColors: true }));
+  sides.name = 'terrain-sides';
+  const triangles = NX * NZ * 2 + sideTris;
 
   const heightAt = (x: number, z: number): number => {
     const fx = Math.min(NX, Math.max(0, (x - WORLD.minX) / dx));
@@ -326,5 +282,5 @@ export function buildTerrain(input: TerrainInput): Terrain {
     return u + v <= 1 ? ha + u * (hb - ha) + v * (hc - ha) : hd + (1 - u) * (hc - hd) + (1 - v) * (hb - hd);
   };
 
-  return { mesh, heightAt, baseY, triangles };
+  return { mesh, sides, ground, heightAt, baseY, triangles };
 }
