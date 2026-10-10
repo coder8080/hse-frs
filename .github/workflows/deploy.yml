@@ -1,0 +1,84 @@
+# Проверка и деплой на GitHub Pages (R14).
+# Любой упавший шаг блокирует деплой: на сайте остаётся прошлая рабочая версия.
+name: Проверка и деплой
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Один деплой за раз; уже начатый не отменяем, чтобы Pages не остался в полусостоянии
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Проверка и сборка
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Сжатые фото (R12) кэшируются между запусками по хэшу исходников
+      - name: Кэш сжатых фото
+        uses: actions/cache@v4
+        with:
+          path: .cache/photos
+          key: photos-${{ hashFiles('content/photos/**', 'vite-plugin-content/photos.ts') }}
+          restore-keys: photos-
+
+      - name: Проверка контента (тексты, фото, route.json)
+        run: npm run check:content
+
+      - name: Юнит-тесты
+        run: npm test
+
+      - name: Браузер для e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Сборка сайта
+        run: npm run build
+
+      - name: E2E-тесты на собранном сайте
+        run: npx playwright test
+
+      - name: Отчёт Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    name: Деплой на Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

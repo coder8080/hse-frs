@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Миниатюры — превью</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #dfe9ee; font-family: system-ui, sans-serif; }
+      canvas { display: block; }
+      .label { position: absolute; transform: translate(-50%, 0); font-size: 12px; color: #3a3f46; background: rgba(255,255,255,.7); padding: 1px 6px; border-radius: 8px; pointer-events: none; white-space: nowrap; }
+      #info { position: absolute; left: 8px; top: 8px; font-size: 12px; color: #3a3f46; }
+    </style>
+  </head>
+  <body>
+    <div id="info"></div>
+    <script type="module" src="/src/models/preview.ts"></script>
+  </body>
+</html>

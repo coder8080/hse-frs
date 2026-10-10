@@ -1,0 +1,14 @@
+{
+  "dem": {
+    "source": "Copernicus DEM GLO-30 (AWS Open Data, s3://copernicus-dem-30m)",
+    "license": "Copernicus DEM licence (бесплатное использование с указанием источника)",
+    "notice": "© DLR e.V. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. Produced using Copernicus WorldDEM-30.",
+    "url": "https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model"
+  },
+  "osm": {
+    "source": "OpenStreetMap (Overpass API): граница Татарстана, водохранилища, осевые линии рек",
+    "license": "Open Database License (ODbL) 1.0",
+    "notice": "© OpenStreetMap contributors",
+    "url": "https://www.openstreetmap.org/copyright"
+  }
+}

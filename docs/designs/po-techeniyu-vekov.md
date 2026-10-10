@@ -1382,7 +1382,7 @@ Conflict flags: `package.json` (зависимости добавляют все
 Synthesized from this review's findings. Each task derives from a specific
 finding above. Run with Claude Code or Codex; checkbox as you ship.
 
-- [ ] **T1 (P1, human: ~1 день / CC: ~20 мин)** — src/talk — Машина состояний «Доклада» с таблицей юнит-тестов
+- [x] **T1 (P1, human: ~1 день / CC: ~20 мин)** — src/talk — Машина состояний «Доклада» с таблицей юнит-тестов
   - Surfaced by: Section 1 — #1 (R2), #2 (R3), Section 2 #4 (R13)
   - Files: src/talk/machine.ts, tests/machine.test.ts
   - Verify: `npx vitest run tests/machine.test.ts`
@@ -1390,39 +1390,39 @@ finding above. Run with Claude Code or Codex; checkbox as you ship.
   - Surfaced by: Scope #1 (R1), Section 3 (R14)
   - Files: .github/workflows/deploy.yml, playwright.config.ts
   - Verify: push в main → зелёный запуск и сайт на Pages
-- [ ] **T3 (P1, human: ~2 ч / CC: ~10 мин)** — content — route.json как единственный источник порядка + cross-check
+- [x] **T3 (P1, human: ~2 ч / CC: ~10 мин)** — content — route.json как единственный источник порядка + cross-check
   - Surfaced by: Section 2 — #1 (R10)
   - Files: content/route.json, content/schema.ts, vite-plugin-content/index.ts, tests/content.test.ts
   - Verify: `npx vitest run tests/content.test.ts`
-- [ ] **T4 (P2, human: ~0,5 дня / CC: ~15 мин)** — content — фото через sharp + атрибуция во frontmatter, страница «Источники» из frontmatter
+- [x] **T4 (P2, human: ~0,5 дня / CC: ~15 мин)** — content — фото через sharp + атрибуция во frontmatter, страница «Источники» из frontmatter
   - Surfaced by: Section 2 — #3 (R12)
   - Files: vite-plugin-content/photos.ts, scripts/photos.ts, tests/photos.test.ts
   - Verify: `npx vitest run tests/photos.test.ts`
-- [ ] **T5 (P2, human: ~1 ч / CC: ~5 мин)** — content — поле factcheck + `npm run check:release`
+- [x] **T5 (P2, human: ~1 ч / CC: ~5 мин)** — content — поле factcheck + `npm run check:release`
   - Surfaced by: Section 2 — #2 (R11)
   - Files: content/schema.ts, scripts/check-release.ts, tests/content.test.ts
   - Verify: `npm run check:release` падает на непроверенной остановке
-- [ ] **T6 (P2, human: ~0,5 дня / CC: ~15 мин)** — src/scene — потеря WebGL-контекста и смена экрана + e2e
+- [x] **T6 (P2, human: ~0,5 дня / CC: ~15 мин)** — src/scene — потеря WebGL-контекста и смена экрана + e2e
   - Surfaced by: Section 1 — #3 (R4)
   - Files: src/scene/renderer.ts, e2e/talk.spec.ts
   - Verify: `npx playwright test e2e/talk.spec.ts -g context`
-- [ ] **T7 (P2, human: ~2 ч / CC: ~5 мин)** — src/talk — место в URL (#s=N&p=M)
+- [x] **T7 (P2, human: ~2 ч / CC: ~5 мин)** — src/talk — место в URL (#s=N&p=M)
   - Surfaced by: Section 1 — #4 (R5)
   - Files: src/talk/hash.ts, tests/hash.test.ts, e2e/talk.spec.ts
   - Verify: `npx vitest run tests/hash.test.ts` + e2e F5
-- [ ] **T8 (P2, human: ~1 ч / CC: ~10 мин)** — src — detectDevice по короткой стороне с пересчётом при повороте; зоны касания
+- [x] **T8 (P2, human: ~1 ч / CC: ~10 мин)** — src — detectDevice по короткой стороне с пересчётом при повороте; зоны касания
   - Surfaced by: Section 1 — #7 (R8), #8 (R9)
   - Files: src/device.ts, src/talk/input.ts, tests/device.test.ts, e2e/tour.spec.ts
   - Verify: `npx vitest run tests/device.test.ts` + e2e касаний
-- [ ] **T9 (P2, human: ~1 день / CC: ~35 мин)** — scripts, src/scene — водохранилища плоскими мешами, реки лентами, запечённые тени, тест бюджета
+- [x] **T9 (P2, human: ~1 день / CC: ~35 мин)** — scripts, src/scene — водохранилища плоскими мешами, реки лентами, запечённые тени, тест бюджета
   - Surfaced by: Section 4 — #1 (R15), #2 (R16); Scope R3-8
   - Files: scripts/osm.ts, src/scene/water.ts, src/scene/terrain.ts, tests/budget.test.ts
   - Verify: `npx vitest run tests/budget.test.ts` + визуально на облёте Свияжска
-- [ ] **T10 (P3, human: ~3 ч / CC: ~15 мин)** — src/ui — предзагрузка фото «Доклада», заглушка битого фото, освобождение `<img>`
+- [x] **T10 (P3, human: ~3 ч / CC: ~15 мин)** — src/ui — предзагрузка фото «Доклада», заглушка битого фото, освобождение `<img>`
   - Surfaced by: Section 4 — #3 (R17), #4 (R18), #5
   - Files: src/ui/slideshow.ts, src/talk/preload.ts, e2e/talk.spec.ts
   - Verify: e2e: подменённый 404 → заглушка; все фото доклада в кэше после старта
-- [ ] **T11 (P3, human: ~30 мин / CC: ~5 мин)** — docs — README для команды: правка текста, загрузка фото, factcheck, процедура ноутбука для защиты
+- [x] **T11 (P3, human: ~30 мин / CC: ~5 мин)** — docs — README для команды: правка текста, загрузка фото, factcheck, процедура ноутбука для защиты
   - Surfaced by: Section 2 #3 (R12), #2 (R11); Scope R3-14
   - Files: README.md
   - Verify: участник без опыта программирования меняет текст и фото через веб-интерфейс по инструкции

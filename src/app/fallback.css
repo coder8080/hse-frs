@@ -1,0 +1,140 @@
+.fb {
+  --fb-paper: #f6f2e9;
+  --fb-ink: #2a2723;
+  --fb-muted: #6b645a;
+  --fb-accent: #8a5a44;
+  --fb-line: #e2dbcc;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--fb-ink);
+  font: 17px/1.6 'Manrope Variable', system-ui, sans-serif;
+}
+
+body:has(.fb) {
+  margin: 0;
+  background: var(--fb-paper, #f6f2e9);
+}
+
+.fb h1,
+.fb h2 {
+  font-family: 'Lora Variable', Georgia, serif;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.fb h1 {
+  font-size: clamp(30px, 7vw, 44px);
+}
+
+.fb-lead {
+  font-size: 19px;
+  color: var(--fb-muted);
+  margin: 6px 0 0;
+}
+
+.fb-note {
+  font-size: 14px;
+  color: var(--fb-muted);
+  border-left: 3px solid var(--fb-accent);
+  padding-left: 10px;
+  margin: 16px 0;
+}
+
+.fb-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 15px;
+  margin: 18px 0 8px;
+}
+
+.fb a {
+  color: var(--fb-accent);
+}
+
+.fb-stop {
+  border-top: 1px solid var(--fb-line);
+  padding-top: 28px;
+  margin-top: 36px;
+}
+
+.fb-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  align-items: baseline;
+}
+
+.fb-num {
+  font-family: 'Lora Variable', Georgia, serif;
+  font-size: 28px;
+  color: var(--fb-accent);
+  grid-row: span 2;
+}
+
+.fb-sub {
+  margin: 0;
+  color: var(--fb-muted);
+}
+
+.fb-link {
+  font-style: italic;
+  color: var(--fb-muted);
+}
+
+.fb-gallery {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.fb-gallery figure {
+  margin: 0;
+}
+
+.fb-gallery img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  background: var(--fb-line);
+  display: block;
+}
+
+.fb-gallery figure.broken img {
+  aspect-ratio: 3 / 2;
+  visibility: hidden;
+}
+
+.fb-gallery figcaption {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.fb-gallery small {
+  color: var(--fb-muted);
+  font-size: 12px;
+}
+
+.fb-body h2 {
+  font-size: 22px;
+  margin: 24px 0 8px;
+}
+
+.fb-sources {
+  font-size: 15px;
+  margin-top: 16px;
+}
+
+.fb-sources summary {
+  cursor: pointer;
+  color: var(--fb-accent);
+}
+
+.fb-foot {
+  margin-top: 48px;
+  font-size: 13px;
+  color: var(--fb-muted);
+}

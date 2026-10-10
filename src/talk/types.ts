@@ -1,6 +1,7 @@
 // Контракт машины состояний «Доклада» (R2). Реализация — src/talk/machine.ts.
 // Клавиши, кликер и касания превращаются в TalkEvent; сцена и оверлеи только исполняют Effect.
 
+/** arrived — зарезервировано (машина его не порождает; forward/back/animationDone в нём открывают оверлей). */
 export type Phase = 'flying' | 'arrived' | 'slideshow' | 'card';
 
 export interface TalkState {

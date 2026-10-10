@@ -1,0 +1,351 @@
+/* Каркас приложения: канвас, обложка доклада, панель «Путешествия», QR, «Источники», подписи на карте.
+   Токены — из src/ui/styles.css (--ui-*). */
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #dfe9ee;
+  font-family: var(--ui-sans);
+  color: var(--ui-ink);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+#app,
+#app canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.app-btn {
+  font: 600 15px/1 var(--ui-sans);
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ui-rule);
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  cursor: pointer;
+}
+.app-btn:hover {
+  background: var(--ui-paper-2);
+}
+.app-btn:focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 2px;
+}
+.app-btn--primary {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: #fff;
+}
+.app-btn--primary:hover {
+  background: #96361f;
+}
+
+/* ——— загрузка ——— */
+.app-loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 500 18px var(--ui-sans);
+  color: var(--ui-ink-2);
+  z-index: 5;
+}
+
+/* ——— обложка «Доклада» ——— */
+.app-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  align-items: end;
+  padding: calc(var(--u) * 9) calc(var(--u) * 10);
+  background: linear-gradient(to top, rgb(20 23 26 / 0.82), rgb(20 23 26 / 0.35) 55%, rgb(20 23 26 / 0) 80%);
+  pointer-events: none;
+}
+.app-cover[hidden] {
+  display: none;
+}
+.app-cover__inner {
+  color: var(--ui-on-night);
+  max-width: 70ch;
+}
+.app-cover__kicker {
+  font: 700 calc(var(--u) * 1.9) / 1 var(--ui-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-gold);
+  margin: 0 0 calc(var(--u) * 2);
+}
+.app-cover h1 {
+  font: 600 calc(var(--u) * 10) / 1 var(--ui-serif);
+  margin: 0;
+}
+.app-cover__sub {
+  font: italic 400 calc(var(--u) * 4) / 1.2 var(--ui-serif);
+  margin: calc(var(--u) * 1.5) 0 0;
+  color: var(--ui-on-night-2);
+}
+.app-cover__hint {
+  font: 500 calc(var(--u) * 1.6) / 1 var(--ui-sans);
+  margin: calc(var(--u) * 5) 0 0;
+  color: var(--ui-on-night-2);
+}
+
+/* ——— QR на финале ——— */
+.app-qr {
+  position: fixed;
+  right: calc(var(--u) * 3);
+  top: calc(var(--u) * 3);
+  z-index: 45;
+  margin: 0;
+  padding: calc(var(--u) * 1.2);
+  background: #fff;
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow);
+  width: calc(var(--u) * 19);
+}
+.app-qr[hidden] {
+  display: none;
+}
+.app-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.app-qr figcaption {
+  font: 600 calc(var(--u) * 1.25) / 1.2 var(--ui-sans);
+  text-align: center;
+  margin-top: calc(var(--u) * 0.6);
+  color: var(--ui-ink-2);
+}
+
+/* ——— «Путешествие»: панель остановок ——— */
+.app-tour {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  bottom: 16px;
+  width: 340px;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  background: rgb(245 240 230 / 0.94);
+  border: 1px solid var(--ui-rule);
+  border-radius: 8px;
+  box-shadow: var(--ui-shadow);
+  overflow: hidden;
+}
+.app-tour__head {
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid var(--ui-rule);
+}
+.app-tour__head h1 {
+  font: 600 28px/1.1 var(--ui-serif);
+  margin: 0;
+}
+.app-tour__head p {
+  font: italic 400 16px/1.3 var(--ui-serif);
+  color: var(--ui-ink-3);
+  margin: 4px 0 0;
+}
+.app-tour__list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+.app-tour__list button {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 1px 8px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-family: var(--ui-sans);
+  color: var(--ui-ink);
+  cursor: pointer;
+}
+.app-tour__list button:hover {
+  background: var(--ui-paper-2);
+}
+.app-tour__list button.is-active {
+  background: var(--ui-paper-3);
+}
+.app-tour__num {
+  grid-row: span 2;
+  font: 600 20px/1.1 var(--ui-serif);
+  color: var(--ui-accent);
+}
+.app-tour__title {
+  font-weight: 700;
+  font-size: 15px;
+}
+.app-tour__card {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--ui-ink-3);
+}
+.app-tour__actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--ui-rule);
+}
+.app-tour__toggle {
+  display: none;
+}
+
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) {
+  .app-tour {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    max-height: 72vh;
+    border-radius: 14px 14px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateY(100%);
+    transition: transform 220ms var(--ui-ease);
+  }
+  .app-tour.is-open {
+    transform: none;
+  }
+  .app-tour__toggle {
+    display: block;
+    position: fixed;
+    z-index: 26;
+    left: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    box-shadow: var(--ui-shadow);
+  }
+  .app-tour.is-open ~ .app-tour__toggle {
+    display: none;
+  }
+}
+
+/* ——— подписи на карте ——— */
+.app-labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+.app-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  cursor: pointer;
+  border: 0;
+  padding: 4px 9px 4px 4px;
+  border-radius: 999px;
+  background: rgb(245 240 230 / 0.92);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  font: 600 12px/1 var(--ui-sans);
+  color: var(--ui-ink);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app-label[hidden] {
+  display: none;
+}
+.app-label.is-compact {
+  padding-right: 4px;
+}
+.app-label.is-compact span {
+  display: none;
+}
+.app-label.is-compact:hover span {
+  display: inline;
+}
+.app-label b {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+  color: #fff;
+  font-size: 11px;
+}
+.app-label.is-active {
+  background: var(--ui-accent);
+  color: #fff;
+}
+
+/* ——— «Источники» ——— */
+.app-sources {
+  width: min(820px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  border: 0;
+  border-radius: 10px;
+  padding: 0;
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  box-shadow: var(--ui-shadow);
+}
+.app-sources::backdrop {
+  background: var(--ui-backdrop);
+  backdrop-filter: blur(6px);
+}
+.app-sources__inner {
+  padding: 24px 28px 32px;
+  font: 15px/1.55 var(--ui-sans);
+}
+.app-sources__inner h2 {
+  font: 600 30px/1.1 var(--ui-serif);
+  margin: 0 0 8px;
+}
+.app-sources__inner h3 {
+  font: 600 19px/1.2 var(--ui-serif);
+  margin: 22px 0 6px;
+}
+.app-sources__inner ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.app-sources__inner a {
+  color: var(--ui-accent);
+}
+.app-sources__photos {
+  color: var(--ui-ink-3);
+  font-size: 13px;
+  margin-top: 6px !important;
+}
+.app-sources__close {
+  float: right;
+}
+
+/* ——— переключатель режима и отладка ——— */
+.app-mode {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 24;
+}
+
+@media (max-width: 760px) {
+  .app-label:not(.is-active) span {
+    display: none;
+  }
+  .app-label:not(.is-active) {
+    padding-right: 4px;
+  }
+}

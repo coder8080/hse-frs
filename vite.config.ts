@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import content from './vite-plugin-content/index';
+import content from './vite-plugin-content/index.ts';
 
 export default defineConfig({
   // относительные пути: сайт работает и с Pages (/hse-frs/), и с `npm run defense`

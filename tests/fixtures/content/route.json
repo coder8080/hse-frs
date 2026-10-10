@@ -1,0 +1,9 @@
+{
+  "title": "Тестовый маршрут",
+  "subtitle": "Три остановки",
+  "stops": [
+    { "slug": "alpha", "transition": { "type": "start" } },
+    { "slug": "beta", "transition": { "type": "river", "river": "volga" } },
+    { "slug": "gamma", "transition": { "type": "final" } }
+  ]
+}
